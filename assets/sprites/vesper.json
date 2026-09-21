@@ -1,0 +1,80 @@
+{
+  "frame_size": [
+    96,
+    64
+  ],
+  "animations": {
+    "idle": {
+      "frames": 4,
+      "fps": 5,
+      "loop": true,
+      "row": 0
+    },
+    "run": {
+      "frames": 8,
+      "fps": 14,
+      "loop": true,
+      "row": 1
+    },
+    "jump": {
+      "frames": 1,
+      "fps": 1,
+      "loop": false,
+      "row": 2
+    },
+    "fall": {
+      "frames": 1,
+      "fps": 1,
+      "loop": false,
+      "row": 3
+    },
+    "crouch": {
+      "frames": 1,
+      "fps": 1,
+      "loop": false,
+      "row": 4
+    },
+    "attack": {
+      "frames": 5,
+      "fps": 20,
+      "loop": false,
+      "row": 5
+    },
+    "attack_crouch": {
+      "frames": 5,
+      "fps": 20,
+      "loop": false,
+      "row": 6
+    },
+    "attack_air": {
+      "frames": 5,
+      "fps": 20,
+      "loop": false,
+      "row": 7
+    },
+    "throw": {
+      "frames": 3,
+      "fps": 16,
+      "loop": false,
+      "row": 8
+    },
+    "backdash": {
+      "frames": 2,
+      "fps": 10,
+      "loop": true,
+      "row": 9
+    },
+    "hurt": {
+      "frames": 1,
+      "fps": 1,
+      "loop": false,
+      "row": 10
+    },
+    "death": {
+      "frames": 2,
+      "fps": 3,
+      "loop": false,
+      "row": 11
+    }
+  }
+}

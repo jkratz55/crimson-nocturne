@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+display_name = "Short Sword"
+description = "A dhampir's blade, balanced and swift."
+damage = 10
+knockback = 110.0
+hitbox_size = Vector2(30, 12)
+hitbox_offset = Vector2(24, -30)
+crouch_hitbox_offset = Vector2(24, -21)
+active_frames = Vector2i(1, 3)
+speed_scale = 1.0
+swing_sfx = &"sword_swing"
+hit_stop = 0.05

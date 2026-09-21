@@ -1,0 +1,67 @@
+[gd_scene load_steps=14 format=3]
+
+[ext_resource type="Script" path="res://scripts/player/player.gd" id="1_player"]
+[ext_resource type="SpriteFrames" path="res://resources/sprite_frames/vesper_frames.tres" id="2_frames"]
+[ext_resource type="Script" path="res://scripts/components/health_component.gd" id="3_health"]
+[ext_resource type="Script" path="res://scripts/components/hurtbox.gd" id="4_hurtbox"]
+[ext_resource type="Script" path="res://scripts/components/hitbox.gd" id="5_hitbox"]
+[ext_resource type="Resource" path="res://resources/weapons/short_sword.tres" id="6_sword"]
+[ext_resource type="Script" path="res://scripts/data/subweapon_data.gd" id="7_subweapon_data"]
+[ext_resource type="Resource" path="res://resources/subweapons/dagger.tres" id="8_dagger"]
+[ext_resource type="Resource" path="res://resources/subweapons/axe.tres" id="9_axe"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_body"]
+resource_local_to_scene = true
+size = Vector2(10, 34)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_hurt"]
+size = Vector2(10, 30)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_weapon"]
+resource_local_to_scene = true
+size = Vector2(30, 12)
+
+[node name="Player" type="CharacterBody2D" groups=["player"]]
+z_index = 10
+collision_layer = 2
+collision_mask = 257
+floor_snap_length = 3.0
+script = ExtResource("1_player")
+weapon = ExtResource("6_sword")
+subweapons = Array[ExtResource("7_subweapon_data")]([ExtResource("8_dagger"), ExtResource("9_axe")])
+
+[node name="Sprite" type="AnimatedSprite2D" parent="."]
+sprite_frames = ExtResource("2_frames")
+animation = &"idle"
+autoplay = "idle"
+offset = Vector2(0, -28)
+
+[node name="BodyShape" type="CollisionShape2D" parent="."]
+position = Vector2(0, -17)
+shape = SubResource("RectangleShape2D_body")
+
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("3_health")
+max_health = 80
+
+[node name="Hurtbox" type="Area2D" parent="."]
+collision_layer = 8
+collision_mask = 64
+monitorable = false
+script = ExtResource("4_hurtbox")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox"]
+position = Vector2(0, -17)
+shape = SubResource("RectangleShape2D_hurt")
+
+[node name="WeaponHitbox" type="Area2D" parent="."]
+collision_layer = 32
+collision_mask = 0
+monitoring = false
+script = ExtResource("5_hitbox")
+start_active = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WeaponHitbox"]
+position = Vector2(24, -30)
+shape = SubResource("RectangleShape2D_weapon")
+disabled = true

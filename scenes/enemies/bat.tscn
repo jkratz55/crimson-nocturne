@@ -1,0 +1,74 @@
+[gd_scene load_steps=16 format=3]
+
+[ext_resource type="Script" path="res://scripts/enemies/bat.gd" id="1_script"]
+[ext_resource type="SpriteFrames" path="res://resources/sprite_frames/bat_frames.tres" id="2_frames"]
+[ext_resource type="Shader" path="res://shaders/hit_flash.gdshader" id="3_flash"]
+[ext_resource type="Script" path="res://scripts/components/health_component.gd" id="4_health"]
+[ext_resource type="Script" path="res://scripts/components/hurtbox.gd" id="5_hurtbox"]
+[ext_resource type="Script" path="res://scripts/components/hitbox.gd" id="6_hitbox"]
+[ext_resource type="PackedScene" path="res://scenes/pickups/heart_small.tscn" id="7_heart_small"]
+[ext_resource type="PackedScene" path="res://scenes/pickups/heart_big.tscn" id="8_heart_big"]
+[ext_resource type="PackedScene" path="res://scenes/fx/death_flame.tscn" id="9_death"]
+[ext_resource type="PackedScene" path="res://scenes/fx/hit_spark.tscn" id="10_spark"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_flash"]
+resource_local_to_scene = true
+shader = ExtResource("3_flash")
+shader_parameter/flash_amount = 0.0
+shader_parameter/flash_color = Color(1, 1, 1, 1)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_body"]
+radius = 5.0
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_hurt"]
+size = Vector2(18, 12)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_contact"]
+size = Vector2(12, 8)
+
+[node name="Bat" type="CharacterBody2D"]
+z_index = 6
+collision_layer = 4
+collision_mask = 0
+motion_mode = 1
+script = ExtResource("1_script")
+display_name = "Bat"
+uses_gravity = false
+hit_stun_time = 0.15
+contact_damage = 4
+heart_drop_chance = 0.35
+small_heart_scene = ExtResource("7_heart_small")
+big_heart_scene = ExtResource("8_heart_big")
+experience = 3
+death_effect_scene = ExtResource("9_death")
+hit_effect_scene = ExtResource("10_spark")
+
+[node name="Sprite" type="AnimatedSprite2D" parent="."]
+material = SubResource("ShaderMaterial_flash")
+sprite_frames = ExtResource("2_frames")
+animation = &"hang"
+
+[node name="BodyShape" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_body")
+
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("4_health")
+max_health = 8
+
+[node name="Hurtbox" type="Area2D" parent="."]
+collision_layer = 16
+collision_mask = 32
+monitorable = false
+script = ExtResource("5_hurtbox")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox"]
+shape = SubResource("RectangleShape2D_hurt")
+
+[node name="ContactHitbox" type="Area2D" parent="."]
+collision_layer = 64
+collision_mask = 0
+monitoring = false
+script = ExtResource("6_hitbox")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ContactHitbox"]
+shape = SubResource("RectangleShape2D_contact")

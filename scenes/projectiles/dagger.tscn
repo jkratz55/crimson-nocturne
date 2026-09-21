@@ -1,0 +1,39 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/projectiles/projectile.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/components/hitbox.gd" id="2_hitbox"]
+[ext_resource type="Texture2D" path="res://assets/sprites/dagger.png" id="3_tex"]
+[ext_resource type="PackedScene" path="res://scenes/fx/hit_spark.tscn" id="4_impact"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_world"]
+size = Vector2(10, 3)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_hit"]
+size = Vector2(14, 5)
+
+[node name="Dagger" type="Area2D"]
+z_index = 5
+collision_layer = 0
+collision_mask = 1
+monitorable = false
+script = ExtResource("1_script")
+speed = 320.0
+lifetime = 1.2
+impact_effect_scene = ExtResource("4_impact")
+
+[node name="Sprite" type="Sprite2D" parent="."]
+texture = ExtResource("3_tex")
+
+[node name="WorldShape" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_world")
+
+[node name="Hitbox" type="Area2D" parent="."]
+collision_layer = 32
+collision_mask = 0
+monitoring = false
+script = ExtResource("2_hitbox")
+damage = 8
+knockback_force = 60.0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hitbox"]
+shape = SubResource("RectangleShape2D_hit")

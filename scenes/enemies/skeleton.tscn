@@ -1,0 +1,84 @@
+[gd_scene load_steps=18 format=3]
+
+[ext_resource type="Script" path="res://scripts/enemies/skeleton.gd" id="1_script"]
+[ext_resource type="SpriteFrames" path="res://resources/sprite_frames/skeleton_frames.tres" id="2_frames"]
+[ext_resource type="Shader" path="res://shaders/hit_flash.gdshader" id="3_flash"]
+[ext_resource type="Script" path="res://scripts/components/health_component.gd" id="4_health"]
+[ext_resource type="Script" path="res://scripts/components/hurtbox.gd" id="5_hurtbox"]
+[ext_resource type="Script" path="res://scripts/components/hitbox.gd" id="6_hitbox"]
+[ext_resource type="PackedScene" path="res://scenes/projectiles/bone.tscn" id="7_bone"]
+[ext_resource type="PackedScene" path="res://scenes/pickups/heart_small.tscn" id="8_heart_small"]
+[ext_resource type="PackedScene" path="res://scenes/pickups/heart_big.tscn" id="9_heart_big"]
+[ext_resource type="PackedScene" path="res://scenes/fx/death_flame.tscn" id="10_death"]
+[ext_resource type="PackedScene" path="res://scenes/fx/hit_spark.tscn" id="11_spark"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_flash"]
+resource_local_to_scene = true
+shader = ExtResource("3_flash")
+shader_parameter/flash_amount = 0.0
+shader_parameter/flash_color = Color(1, 1, 1, 1)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_body"]
+size = Vector2(12, 36)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_hurt"]
+size = Vector2(16, 38)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_contact"]
+size = Vector2(10, 30)
+
+[node name="Skeleton" type="CharacterBody2D"]
+z_index = 5
+collision_layer = 4
+collision_mask = 257
+floor_snap_length = 3.0
+script = ExtResource("1_script")
+bone_scene = ExtResource("7_bone")
+display_name = "Skeleton"
+knockback_resistance = 0.2
+contact_damage = 6
+heart_drop_chance = 0.5
+small_heart_scene = ExtResource("8_heart_small")
+big_heart_scene = ExtResource("9_heart_big")
+experience = 6
+death_effect_scene = ExtResource("10_death")
+hit_effect_scene = ExtResource("11_spark")
+
+[node name="Sprite" type="AnimatedSprite2D" parent="."]
+material = SubResource("ShaderMaterial_flash")
+sprite_frames = ExtResource("2_frames")
+animation = &"walk"
+offset = Vector2(0, -21)
+
+[node name="BodyShape" type="CollisionShape2D" parent="."]
+position = Vector2(0, -18)
+shape = SubResource("RectangleShape2D_body")
+
+[node name="LedgeRay" type="RayCast2D" parent="."]
+position = Vector2(10, -4)
+target_position = Vector2(0, 12)
+collision_mask = 257
+
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("4_health")
+max_health = 20
+
+[node name="Hurtbox" type="Area2D" parent="."]
+collision_layer = 16
+collision_mask = 32
+monitorable = false
+script = ExtResource("5_hurtbox")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox"]
+position = Vector2(0, -19)
+shape = SubResource("RectangleShape2D_hurt")
+
+[node name="ContactHitbox" type="Area2D" parent="."]
+collision_layer = 64
+collision_mask = 0
+monitoring = false
+script = ExtResource("6_hitbox")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ContactHitbox"]
+position = Vector2(0, -16)
+shape = SubResource("RectangleShape2D_contact")

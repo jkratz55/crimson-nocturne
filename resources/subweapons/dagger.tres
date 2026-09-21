@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="SubWeaponData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/subweapon_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/dagger.png" id="2_icon"]
+[ext_resource type="PackedScene" path="res://scenes/projectiles/dagger.tscn" id="3_scene"]
+
+[resource]
+script = ExtResource("1_script")
+display_name = "Dagger"
+icon = ExtResource("2_icon")
+projectile_scene = ExtResource("3_scene")
+heart_cost = 1
+max_active = 3
+spawn_offset = Vector2(12, -30)
+throw_sfx = &"dagger_throw"

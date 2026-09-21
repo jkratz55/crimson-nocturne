@@ -1,0 +1,8 @@
+# Godot 4
+.godot/
+/android/
+*.translation
+export.cfg
+export_credentials.cfg
+# Python asset pipeline caches
+__pycache__/

@@ -1,0 +1,14 @@
+{
+  "frame_size": [
+    16,
+    32
+  ],
+  "animations": {
+    "burn": {
+      "frames": 4,
+      "fps": 10,
+      "loop": true,
+      "row": 0
+    }
+  }
+}
