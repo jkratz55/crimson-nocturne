@@ -17,6 +17,7 @@ const VOICE_COUNT: int = 12
 ## Registry of every sound effect in the game, keyed by id.
 var _library: Dictionary[StringName, AudioStream] = {
 	&"sword_swing": preload("res://assets/audio/sfx/sword_swing.wav"),
+	&"whip_crack": preload("res://assets/audio/sfx/whip_crack.wav"),
 	&"hit": preload("res://assets/audio/sfx/hit.wav"),
 	&"enemy_death": preload("res://assets/audio/sfx/enemy_death.wav"),
 	&"player_hurt": preload("res://assets/audio/sfx/player_hurt.wav"),
@@ -31,6 +32,8 @@ var _library: Dictionary[StringName, AudioStream] = {
 	&"bone_throw": preload("res://assets/audio/sfx/bone_throw.wav"),
 	&"bat_screech": preload("res://assets/audio/sfx/bat_screech.wav"),
 	&"no_hearts": preload("res://assets/audio/sfx/no_hearts.wav"),
+	&"menu_move": preload("res://assets/audio/sfx/menu_move.wav"),
+	&"menu_select": preload("res://assets/audio/sfx/menu_select.wav"),
 }
 
 var _voices: Array[AudioStreamPlayer] = []

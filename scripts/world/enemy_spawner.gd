@@ -45,7 +45,9 @@ func _on_timer_timeout() -> void:
 	_timer.wait_time = spawn_interval
 	if not enabled or enemy_scene == null:
 		return
-	_alive.assign(_alive.filter(func(e: Enemy) -> bool: return is_instance_valid(e)))
+	# Typed as Variant on purpose: a freed enemy is still an Object, and it
+	# cannot be converted back to Enemy, which would make the filter fail.
+	_alive.assign(_alive.filter(func(e: Variant) -> bool: return is_instance_valid(e)))
 	if _alive.size() >= max_alive:
 		return
 	var point: Marker2D = _pick_spawn_point()

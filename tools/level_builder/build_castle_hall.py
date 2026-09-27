@@ -106,6 +106,28 @@ CANDLES = [
 SKELETON_SPAWNS = [(48, 256), (620, 256), (728, 256), (360, 192)]
 BAT_SPAWNS = [(216, 42), (400, 42), (552, 42), (696, 42)]
 
+# The save shrine. It sits on the ground floor near the player's start so a
+# fresh run reaches it in a few seconds.
+SAVE_POINT = (104, 256)
+
+# Unique, once-only world items (SPEC 4.7). Each needs a world_item_id that
+# is never reused: it is what the save file remembers, and two items sharing
+# one would make taking either delete both.
+#   (id, x, y, grant, extra props)
+WORLD_ITEMS = [
+    # The traversal relic. It is on the ground floor for now, so the ability
+    # gate is real but nothing in this one room is locked behind it; the
+    # properly gated area arrives with the first wing.
+    ("hall_leap_stone", 296, 256, "ITEM", {"item": "leap_stone"}),
+    # A heart-capacity upgrade on the balcony, which needs the double jump.
+    ("hall_heart_max", 56, 88, "HEART_MAX_UP", {"amount": "5", "icon": "heart_max_up"}),
+    # A ring tucked on the right-hand ledge.
+    ("hall_ruby_ring", 640, 184, "ITEM", {"item": "ruby_ring", "auto_equip": "true"}),
+]
+
+# Grant enum values, mirroring WorldItem.Grant.
+GRANT = {"ITEM": "0", "HEART_MAX_UP": "1", "GOLD": "2"}
+
 
 def encode_layer(layout: list[str], collision: bool) -> str:
     data = bytearray(struct.pack("<H", 0))
@@ -141,7 +163,14 @@ def build() -> None:
         ('PackedScene', 'res://scenes/enemies/bat.tscn', '12_bat'),
         ('PackedScene', 'res://scenes/fx/death_flame.tscn', '13_spawn_fx'),
         ('Script', 'res://scripts/world/room_camera.gd', '14_camera'),
+        ('PackedScene', 'res://scenes/world/save_point.tscn', '15_save'),
+        ('PackedScene', 'res://scenes/pickups/world_item.tscn', '16_world_item'),
+        ('Resource', 'res://resources/relics/leap_stone.tres', '17_leap_stone'),
+        ('Resource', 'res://resources/accessories/ruby_ring.tres', '18_ruby_ring'),
+        ('Texture2D', 'res://assets/sprites/heart_max_up.png', '19_heart_max'),
     ]
+    ITEM_REFS = {"leap_stone": '17_leap_stone', "ruby_ring": '18_ruby_ring',
+                 "heart_max_up": '19_heart_max'}
     out: list[str] = [f'[gd_scene load_steps={len(ext) + 1} format=3]', '']
     out += [f'[ext_resource type="{t}" path="{p}" id="{i}"]' for t, p, i in ext]
     out += ['']
@@ -165,6 +194,7 @@ def build() -> None:
         out.append('')
 
     node("CastleHall", "Node2D", script='ExtResource("1_room")',
+         room_id='&"crimson_hall"',
          display_name='"Crimson Hall"',
          size_in_tiles=f'Vector2i({width}, {height})',
          music='ExtResource("2_music")',
@@ -198,6 +228,24 @@ def build() -> None:
         if kind == "big":
             props["drop_scene"] = 'ExtResource("9_heart_big")'
         node(f"Candle{i + 1}", None, "Candles", "8_candle", **props)
+
+    # --- Save shrine and unique world items ---------------------------------
+    node("SavePoint", None, ".", "15_save",
+         position=f"Vector2({SAVE_POINT[0]}, {SAVE_POINT[1]})")
+
+    node("WorldItems", "Node2D", ".")
+    for item_id, x, y, grant, extra in WORLD_ITEMS:
+        props = {"position": f"Vector2({x}, {y})",
+                 "world_item_id": f'&"{item_id}"',
+                 "grant": GRANT[grant]}
+        for key, value in extra.items():
+            if key == "item":
+                props["item"] = f'ExtResource("{ITEM_REFS[value]}")'
+            elif key == "icon":
+                props["icon_override"] = f'ExtResource("{ITEM_REFS[value]}")'
+            else:
+                props[key] = value
+        node(item_id, None, "WorldItems", "16_world_item", **props)
 
     # --- Actors (player, enemies, projectiles and pickups live here) --------
     node("Actors", "Node2D", ".")

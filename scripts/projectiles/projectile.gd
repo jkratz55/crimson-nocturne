@@ -30,6 +30,7 @@ var velocity: Vector2 = Vector2.ZERO
 var direction: int = 1
 var _gravity: float = ProjectSettings.get_setting("physics/2d/default_gravity")
 var _age: float = 0.0
+var _impacted: bool = false
 
 
 func _ready() -> void:
@@ -48,11 +49,14 @@ func launch(dir: int) -> void:
 
 
 func _physics_process(delta: float) -> void:
+	if _impacted:
+		return
 	velocity.y += _gravity * gravity_scale * delta
 	position += velocity * delta
 	rotation += spin_speed * direction * delta
 	_age += delta
 	if _age >= lifetime:
+		hitbox.deactivate()
 		queue_free()
 
 
@@ -67,8 +71,14 @@ func _on_hit_landed(_hurtbox: Hurtbox) -> void:
 
 
 func _impact() -> void:
+	if _impacted:
+		return
+	_impacted = true
+	hitbox.deactivate()
+	set_deferred(&"monitoring", false)
 	if impact_effect_scene:
 		var fx := impact_effect_scene.instantiate() as Node2D
 		get_parent().add_child.call_deferred(fx)
-		fx.global_position = global_position
+		var parent_2d := get_parent() as Node2D
+		fx.position = parent_2d.to_local(global_position) if parent_2d else global_position
 	queue_free()

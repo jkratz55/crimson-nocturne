@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="AccessoryData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/accessory_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/necklace_silver.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"silver_pendant"
+display_name = "Silver Pendant"
+description = "A drop of moonstone on a fine chain. Blows seem to glance off the wearer."
+icon = ExtResource("2_icon")
+price = 350
+defense_percent = 0.15
+slot = 0

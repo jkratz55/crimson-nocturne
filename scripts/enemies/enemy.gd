@@ -23,6 +23,11 @@ signal defeated(enemy: Enemy)
 
 @export var display_name: String = "Enemy"
 
+## Difficulty tier multiplier applied to HP and damage when the enemy enters
+## the tree, so one resource can staff an early wing and a late one (SPEC 4.5).
+## Rooms set this on the enemies they spawn; 1.0 leaves the authored values alone.
+@export_range(0.25, 8.0, 0.05) var tier_multiplier: float = 1.0
+
 @export_group("Physics")
 @export var uses_gravity: bool = true
 @export var max_fall_speed: float = 380.0
@@ -33,14 +38,24 @@ signal defeated(enemy: Enemy)
 
 @export_group("Combat")
 @export_range(0, 999) var contact_damage: int = 5
+## Fed to [method Combat.compute_damage] as this enemy's Strength, on top of
+## whatever base damage its hitbox carries.
+@export_range(0, 999) var attack_power: int = 0
 
 @export_group("Rewards")
+## Experience banked by the player on kill, scaled to the enemy's tier (SPEC 4.5).
+@export_range(0, 99999) var experience: int = 5
+@export_subgroup("Hearts")
 @export_range(0.0, 1.0) var heart_drop_chance: float = 0.4
 @export_range(0.0, 1.0) var big_heart_chance: float = 0.15
 @export var small_heart_scene: PackedScene
 @export var big_heart_scene: PackedScene
-## Experience awarded on kill (reserved for the future RPG layer).
-@export var experience: int = 5
+@export_subgroup("Gold")
+## Chance of dropping coin at all, rolled independently of hearts (SPEC 4.5).
+@export_range(0.0, 1.0) var gold_drop_chance: float = 0.3
+## Inclusive [min, max] gold in the drop.
+@export var gold_amount_range: Vector2i = Vector2i(5, 15)
+@export var gold_scene: PackedScene
 
 @export_group("Effects")
 @export var death_effect_scene: PackedScene
@@ -63,7 +78,9 @@ var _flash_tween: Tween
 
 func _ready() -> void:
 	add_to_group(&"enemies")
+	_apply_tier()
 	contact_hitbox.damage = contact_damage
+	contact_hitbox.attack_power = attack_power
 	contact_hitbox.single_hit_per_activation = false
 	hurtbox.hit_received.connect(_on_hit_received)
 	health.died.connect(_on_died)
@@ -104,7 +121,8 @@ func _set_facing(dir: int) -> void:
 # Damage & death
 # ---------------------------------------------------------------------------
 func _on_hit_received(hitbox: Hitbox) -> void:
-	var dealt: int = health.take_damage(hitbox.damage)
+	var dealt: int = health.take_damage(
+		Combat.compute_damage(hitbox.damage, hitbox.attack_power, health.defense))
 	Events.damage_dealt.emit(dealt, global_position + Vector2(0, -36), false)
 	Audio.play_sfx(&"hit", 0.1)
 	_flash()
@@ -129,17 +147,38 @@ func _on_died() -> void:
 	GameFeel.hit_stop(0.08)
 	_spawn_effect(death_effect_scene, global_position)
 	_drop_loot()
+	GameManager.add_experience(experience)
 	Events.enemy_killed.emit(self)
 	defeated.emit(self)
 	queue_free()
 
 
+## Roll the hearts and the gold independently, as the spec's drop tables do:
+## an enemy may drop both, either or neither.
 func _drop_loot() -> void:
-	if randf() > heart_drop_chance:
+	if randf() < heart_drop_chance:
+		var scene: PackedScene = big_heart_scene if randf() < big_heart_chance else small_heart_scene
+		if scene:
+			_spawn_effect(scene, global_position + Vector2(0, -16))
+	if gold_scene != null and randf() < gold_drop_chance:
+		var coin := gold_scene.instantiate() as Pickup
+		coin.amount = randi_range(gold_amount_range.x, maxi(gold_amount_range.x, gold_amount_range.y))
+		get_parent().add_child(coin)
+		coin.global_position = global_position + Vector2(randf_range(-6.0, 6.0), -16.0)
+
+
+## Scale the authored stats by the wing's difficulty tier. Children are ready
+## before we are, so the [HealthComponent] has already filled itself to the
+## authored maximum — [method HealthComponent.reset] tops it up to the new one.
+func _apply_tier() -> void:
+	if is_equal_approx(tier_multiplier, 1.0):
 		return
-	var scene: PackedScene = big_heart_scene if randf() < big_heart_chance else small_heart_scene
-	if scene:
-		_spawn_effect(scene, global_position + Vector2(0, -16))
+	health.max_health = maxi(1, roundi(health.max_health * tier_multiplier))
+	health.reset()
+	health.defense = roundi(health.defense * tier_multiplier)
+	contact_damage = maxi(1, roundi(contact_damage * tier_multiplier))
+	attack_power = roundi(attack_power * tier_multiplier)
+	experience = maxi(1, roundi(experience * tier_multiplier))
 
 
 func _flash() -> void:

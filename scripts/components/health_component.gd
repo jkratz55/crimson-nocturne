@@ -22,7 +22,9 @@ signal died
 			current_health = mini(current_health, max_health)
 			health_changed.emit(current_health, max_health)
 
-## Flat damage reduction applied to every hit (minimum 1 damage still dealt).
+## This thing's Defense stat. It is [b]not[/b] subtracted here: damage
+## arrives already resolved by [method Combat.compute_damage], which is the
+## one place the formula lives. Attackers read this value to feed it.
 @export_range(0, 999) var defense: int = 0
 
 var current_health: int = 0
@@ -35,11 +37,13 @@ func _ready() -> void:
 	current_health = max_health
 
 
-## Apply [param amount] damage (after defense). Returns the damage dealt.
+## Remove [param amount] hit points. The caller is expected to have run the
+## damage formula already. Returns the damage actually dealt (0 when already
+## dead, so callers can tell a killing blow from a wasted one).
 func take_damage(amount: int) -> int:
 	if is_dead:
 		return 0
-	var dealt: int = maxi(1, amount - defense)
+	var dealt: int = maxi(1, amount)
 	current_health = maxi(0, current_health - dealt)
 	damaged.emit(dealt)
 	health_changed.emit(current_health, max_health)

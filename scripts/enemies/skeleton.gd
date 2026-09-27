@@ -72,6 +72,7 @@ func _on_frame_changed() -> void:
 		var bone := bone_scene.instantiate() as Projectile
 		get_parent().add_child(bone)
 		bone.global_position = global_position + Vector2(bone_spawn_offset.x * facing, bone_spawn_offset.y)
+		bone.hitbox.attack_power = attack_power
 		bone.launch(facing)
 		Audio.play_sfx(&"bone_throw")
 

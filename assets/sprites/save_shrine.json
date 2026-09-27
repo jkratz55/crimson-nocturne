@@ -1,0 +1,14 @@
+{
+  "frame_size": [
+    32,
+    48
+  ],
+  "animations": {
+    "idle": {
+      "frames": 8,
+      "fps": 8,
+      "loop": true,
+      "row": 0
+    }
+  }
+}

@@ -1,6 +1,6 @@
 {
   "frame_size": [
-    96,
+    128,
     64
   ],
   "animations": {
@@ -52,29 +52,47 @@
       "loop": false,
       "row": 7
     },
+    "attack_whip": {
+      "frames": 5,
+      "fps": 20,
+      "loop": false,
+      "row": 8
+    },
+    "attack_whip_crouch": {
+      "frames": 5,
+      "fps": 20,
+      "loop": false,
+      "row": 9
+    },
+    "attack_whip_air": {
+      "frames": 5,
+      "fps": 20,
+      "loop": false,
+      "row": 10
+    },
     "throw": {
       "frames": 3,
       "fps": 16,
       "loop": false,
-      "row": 8
+      "row": 11
     },
     "backdash": {
       "frames": 2,
       "fps": 10,
       "loop": true,
-      "row": 9
+      "row": 12
     },
     "hurt": {
       "frames": 1,
       "fps": 1,
       "loop": false,
-      "row": 10
+      "row": 13
     },
     "death": {
       "frames": 2,
       "fps": 3,
       "loop": false,
-      "row": 11
+      "row": 14
     }
   }
 }

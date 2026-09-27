@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/whip.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"crimson_lash"
+display_name = "Crimson Lash"
+description = "A braided leather whip with a steel tip. Slow to wind up, but it strikes from well beyond a blade's reach."
+icon = ExtResource("2_icon")
+damage = 13
+knockback = 150.0
+hitbox_size = Vector2(46, 9)
+hitbox_offset = Vector2(38, -30)
+crouch_hitbox_offset = Vector2(38, -21)
+attack_animation = &"attack_whip"
+active_frames = Vector2i(2, 3)
+speed_scale = 0.72
+swing_sfx = &"whip_crack"
+hit_stop = 0.08
+price = 1200

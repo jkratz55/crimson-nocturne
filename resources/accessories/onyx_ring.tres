@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="AccessoryData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/accessory_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ring_onyx.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"onyx_ring"
+display_name = "Onyx Ring"
+description = "Cut from a stone that fell out of a clear sky. Fortune follows it, for good or ill."
+icon = ExtResource("2_icon")
+price = 450
+luck_bonus = 4
+slot = 1

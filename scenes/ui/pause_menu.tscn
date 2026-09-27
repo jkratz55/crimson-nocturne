@@ -1,0 +1,243 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/pause_menu.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/ui/menu_frame.png" id="2_frame"]
+[ext_resource type="Texture2D" path="res://assets/ui/cursor.png" id="3_cursor"]
+[ext_resource type="Texture2D" path="res://assets/ui/marker_equipped.png" id="4_marker"]
+
+[node name="PauseMenu" type="CanvasLayer"]
+process_mode = 3
+layer = 15
+visible = false
+script = ExtResource("1_script")
+cursor_texture = ExtResource("3_cursor")
+equipped_texture = ExtResource("4_marker")
+
+[node name="Root" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Dim" type="ColorRect" parent="Root"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.02, 0.015, 0.045, 0.8)
+
+[node name="Panel" type="NinePatchRect" parent="Root"]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 10.0
+offset_right = 364.0
+offset_bottom = 206.0
+mouse_filter = 2
+texture = ExtResource("2_frame")
+patch_margin_left = 14
+patch_margin_top = 14
+patch_margin_right = 14
+patch_margin_bottom = 14
+
+[node name="TabBar" type="HBoxContainer" parent="Root/Panel"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 12.0
+offset_top = 7.0
+offset_right = 332.0
+offset_bottom = 17.0
+mouse_filter = 2
+theme_override_constants/separation = 14
+alignment = 1
+
+[node name="Rule" type="ColorRect" parent="Root/Panel"]
+layout_mode = 0
+offset_left = 12.0
+offset_top = 21.0
+offset_right = 332.0
+offset_bottom = 22.0
+mouse_filter = 2
+color = Color(0.59, 0.41, 0.16, 1)
+
+[node name="Equipment" type="Control" parent="Root/Panel"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 12.0
+offset_top = 24.0
+offset_right = 332.0
+offset_bottom = 124.0
+mouse_filter = 2
+
+[node name="SlotHeader" type="Label" parent="Root/Panel/Equipment"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_right = 166.0
+offset_bottom = 10.0
+theme_override_colors/font_color = Color(0.94, 0.78, 0.36, 1)
+text = "EQUIPPED"
+
+[node name="ItemHeader" type="Label" parent="Root/Panel/Equipment"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 174.0
+offset_right = 320.0
+offset_bottom = 10.0
+theme_override_colors/font_color = Color(0.45, 0.43, 0.55, 1)
+text = "CARRIED"
+
+[node name="SlotList" type="VBoxContainer" parent="Root/Panel/Equipment"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_top = 12.0
+offset_right = 166.0
+offset_bottom = 100.0
+mouse_filter = 2
+theme_override_constants/separation = 0
+
+[node name="ItemScroll" type="ScrollContainer" parent="Root/Panel/Equipment"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 174.0
+offset_top = 12.0
+offset_right = 320.0
+offset_bottom = 100.0
+mouse_filter = 2
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 3
+
+[node name="ItemList" type="VBoxContainer" parent="Root/Panel/Equipment/ItemScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme_override_constants/separation = 0
+
+[node name="Stats" type="Control" parent="Root/Panel"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 0
+offset_left = 12.0
+offset_top = 24.0
+offset_right = 332.0
+offset_bottom = 124.0
+mouse_filter = 2
+
+[node name="StatsLeft" type="VBoxContainer" parent="Root/Panel/Stats"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_top = 4.0
+offset_right = 158.0
+offset_bottom = 96.0
+mouse_filter = 2
+theme_override_constants/separation = 2
+
+[node name="StatsRight" type="VBoxContainer" parent="Root/Panel/Stats"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 166.0
+offset_top = 4.0
+offset_right = 320.0
+offset_bottom = 96.0
+mouse_filter = 2
+theme_override_constants/separation = 2
+
+[node name="Map" type="Control" parent="Root/Panel"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 0
+offset_left = 12.0
+offset_top = 24.0
+offset_right = 332.0
+offset_bottom = 124.0
+mouse_filter = 2
+
+[node name="MapBody" type="Label" parent="Root/Panel/Map"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_top = 4.0
+offset_right = 320.0
+offset_bottom = 96.0
+theme_override_colors/font_color = Color(0.72, 0.7, 0.8, 1)
+text = "NO ROOMS CHARTED"
+autowrap_mode = 3
+
+[node name="System" type="Control" parent="Root/Panel"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 0
+offset_left = 12.0
+offset_top = 24.0
+offset_right = 332.0
+offset_bottom = 124.0
+mouse_filter = 2
+
+[node name="SystemList" type="VBoxContainer" parent="Root/Panel/System"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_top = 4.0
+offset_right = 320.0
+offset_bottom = 96.0
+mouse_filter = 2
+theme_override_constants/separation = 2
+
+[node name="InfoBox" type="NinePatchRect" parent="Root/Panel"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 10.0
+offset_top = 126.0
+offset_right = 334.0
+offset_bottom = 180.0
+mouse_filter = 2
+texture = ExtResource("2_frame")
+patch_margin_left = 14
+patch_margin_top = 14
+patch_margin_right = 14
+patch_margin_bottom = 14
+
+[node name="InfoName" type="Label" parent="Root/Panel/InfoBox"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 10.0
+offset_top = 7.0
+offset_right = 314.0
+offset_bottom = 17.0
+theme_override_colors/font_color = Color(0.94, 0.78, 0.36, 1)
+text = "SHORT SWORD"
+
+[node name="InfoDescription" type="Label" parent="Root/Panel/InfoBox"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 10.0
+offset_top = 18.0
+offset_right = 314.0
+offset_bottom = 39.0
+theme_override_colors/font_color = Color(0.72, 0.7, 0.8, 1)
+text = "A dhampir's blade, balanced and swift."
+autowrap_mode = 3
+clip_text = true
+
+[node name="InfoStats" type="Label" parent="Root/Panel/InfoBox"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 10.0
+offset_top = 40.0
+offset_right = 314.0
+offset_bottom = 50.0
+theme_override_colors/font_color = Color(0.86, 0.86, 0.94, 1)
+text = "DAMAGE 10    REACH 39"
+
+[node name="Hint" type="Label" parent="Root/Panel"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_top = 182.0
+offset_right = 344.0
+offset_bottom = 192.0
+theme_override_colors/font_color = Color(0.5, 0.48, 0.6, 1)
+text = "MOVE   EQUIP   CLOSE"
+horizontal_alignment = 1

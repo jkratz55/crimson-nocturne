@@ -1,0 +1,91 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/save_menu.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/ui/menu_frame.png" id="2_frame"]
+[ext_resource type="Texture2D" path="res://assets/ui/cursor.png" id="3_cursor"]
+
+[node name="SaveMenu" type="CanvasLayer"]
+process_mode = 3
+layer = 16
+visible = false
+script = ExtResource("1_script")
+cursor_texture = ExtResource("3_cursor")
+
+[node name="Root" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Dim" type="ColorRect" parent="Root"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.02, 0.015, 0.045, 0.8)
+
+[node name="Panel" type="NinePatchRect" parent="Root"]
+layout_mode = 0
+offset_left = 52.0
+offset_top = 44.0
+offset_right = 332.0
+offset_bottom = 172.0
+mouse_filter = 2
+texture = ExtResource("2_frame")
+patch_margin_left = 14
+patch_margin_top = 14
+patch_margin_right = 14
+patch_margin_bottom = 14
+
+[node name="Title" type="Label" parent="Root/Panel"]
+layout_mode = 0
+offset_top = 9.0
+offset_right = 280.0
+offset_bottom = 19.0
+theme_override_colors/font_color = Color(0.94, 0.78, 0.36, 1)
+text = "REST AND RECORD"
+horizontal_alignment = 1
+
+[node name="Rule" type="ColorRect" parent="Root/Panel"]
+layout_mode = 0
+offset_left = 16.0
+offset_top = 24.0
+offset_right = 264.0
+offset_bottom = 25.0
+mouse_filter = 2
+color = Color(0.59, 0.41, 0.16, 1)
+
+[node name="SlotList" type="VBoxContainer" parent="Root/Panel"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 18.0
+offset_top = 30.0
+offset_right = 262.0
+offset_bottom = 96.0
+mouse_filter = 2
+theme_override_constants/separation = 0
+
+[node name="Message" type="Label" parent="Root/Panel"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_top = 98.0
+offset_right = 280.0
+offset_bottom = 108.0
+theme_override_colors/font_color = Color(0.72, 0.87, 1, 1)
+horizontal_alignment = 1
+
+[node name="Hint" type="Label" parent="Root/Panel"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_top = 110.0
+offset_right = 280.0
+offset_bottom = 120.0
+theme_override_colors/font_color = Color(0.5, 0.48, 0.6, 1)
+text = "DOWN PICK   X SAVE   E LEAVE"
+horizontal_alignment = 1

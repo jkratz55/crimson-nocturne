@@ -8,16 +8,24 @@
 ## - Coyote time and jump buffering
 ## - Variable jump height (release jump early to cut the arc)
 ## - Heavier gravity when falling for a snappier arc
-## - Double jump (an unlockable ability flag)
+## - Double jump, gated on the Leap Stone relic (SPEC 4.1)
 ## - Backdash with its own cooldown
 ## - Drop-through one-way platforms (Down + Jump)
 ##
 ## [b]Combat[/b]
-## - Melee attacks defined by a [WeaponData] resource using frame data
-## - Standing / crouching / aerial attack variants
+## - Two melee hands: Attack swings the primary weapon, Secondary Attack the
+##   off-hand one, each a [WeaponData] resource driven by frame data
+## - Standing / crouching / aerial attack variants, the crouch shrinking both
+##   the body and the hurtbox to match the sprite
 ## - Heart-powered sub-weapons ([SubWeaponData]) via the Sub-weapon button
 ##   or the classic Up + Attack input
 ## - Knockback, stun and blinking invincibility frames when hurt
+##
+## [b]What it does not own[/b][br]
+## Levels, stats, gold, hearts, the inventory and what is equipped all live in
+## [GameManager], because this node is thrown away and rebuilt on every room
+## change and every death. The player reads through to it and mirrors only
+## current HP, which [HealthComponent] needs locally.
 ##
 ## Scene contract: see `scenes/player/player.tscn` for the expected children.
 class_name Player
@@ -29,6 +37,9 @@ enum State { IDLE, RUN, JUMP, FALL, CROUCH, ATTACK, THROW, BACKDASH, HURT, DEAD 
 const ONE_WAY_LAYER: int = 9
 const STAND_SHAPE_SIZE: Vector2 = Vector2(10.0, 34.0)
 const CROUCH_SHAPE_SIZE: Vector2 = Vector2(10.0, 22.0)
+## The hurtbox is a little narrower than the body so grazes do not register.
+const STAND_HURT_SIZE: Vector2 = Vector2(10.0, 30.0)
+const CROUCH_HURT_SIZE: Vector2 = Vector2(10.0, 19.0)
 
 @export_group("Movement")
 @export var run_speed: float = 105.0
@@ -45,19 +56,17 @@ const CROUCH_SHAPE_SIZE: Vector2 = Vector2(10.0, 22.0)
 @export var max_fall_speed: float = 380.0
 @export var coyote_time: float = 0.08
 @export var jump_buffer_time: float = 0.12
-## Ability unlock flag (think "Leap Stone"). Toggle to gate progression.
-@export var can_double_jump: bool = true
 
 @export_group("Backdash")
-@export var backdash_speed: float = 220.0
-@export var backdash_duration: float = 0.22
+@export var backdash_speed: float = 250.0
+@export var backdash_duration: float = 0.30
 @export var backdash_cooldown: float = 0.12
 
 @export_group("Combat")
-@export var weapon: WeaponData
-@export var subweapons: Array[SubWeaponData] = []
-@export_range(0, 999) var starting_hearts: int = 10
-@export_range(0, 999) var max_hearts: int = 99
+## What Vesper is carrying when a brand new game starts: weapons, sub-weapons,
+## armour, rings. Handed to [method GameManager.seed_starting_loadout], which
+## equips whatever has an empty slot and ignores the lot if a save was loaded.
+@export var starting_loadout: Array[ItemData] = []
 @export_range(0, 999) var max_mp: int = 50
 ## MP regenerated per second (MP is reserved for future spells / familiars).
 @export var mp_regen_per_second: float = 2.0
@@ -70,35 +79,51 @@ const CROUCH_SHAPE_SIZE: Vector2 = Vector2(10.0, 22.0)
 @onready var body_shape: CollisionShape2D = $BodyShape
 @onready var health: HealthComponent = $HealthComponent
 @onready var hurtbox: Hurtbox = $Hurtbox
+@onready var hurt_shape: CollisionShape2D = $Hurtbox/CollisionShape2D
 @onready var weapon_hitbox: Hitbox = $WeaponHitbox
 @onready var weapon_shape: CollisionShape2D = $WeaponHitbox/CollisionShape2D
 
 var state: State = State.IDLE
 ## 1 = facing right, -1 = facing left.
 var facing: int = 1
-var hearts: int = 0
 var mp: int = 0
-var subweapon_index: int = 0
+
+## Hearts, gold, stats and equipment all live in [GameManager]; these are
+## read-only windows onto it so gameplay code reads naturally.
+var hearts: int:
+	get:
+		return GameManager.hearts
+var weapon: WeaponData:
+	get:
+		return GameManager.get_primary_weapon()
+var secondary_weapon: WeaponData:
+	get:
+		return GameManager.get_secondary_weapon()
 
 var _gravity: float = ProjectSettings.get_setting("physics/2d/default_gravity")
 var _coyote_timer: float = 0.0
 var _jump_buffer_timer: float = 0.0
 var _state_time: float = 0.0
 var _backdash_cooldown_timer: float = 0.0
+var _subweapon_cooldown_timer: float = 0.0
 var _drop_through_timer: float = 0.0
 var _mp_regen_accumulator: float = 0.0
 var _has_double_jumped: bool = false
 var _is_crouch_attack: bool = false
 var _was_on_floor: bool = true
 var _thrown_this_state: bool = false
+## The hand mid-swing. Held separately from the equipped weapon so an equip
+## during recovery cannot retime the frame data underneath the animation.
+var _swinging: WeaponData
 var _active_projectiles: Array[Node] = []
+## Guards the two-way mirror between [HealthComponent] and GameManager.current_hp.
+var _syncing_health: bool = false
 
 
 # ---------------------------------------------------------------------------
 # Lifecycle
 # ---------------------------------------------------------------------------
 func _ready() -> void:
-	hearts = starting_hearts
 	mp = max_mp
 	weapon_hitbox.deactivate()
 	hurtbox.hit_received.connect(_on_hit_received)
@@ -106,6 +131,10 @@ func _ready() -> void:
 	health.health_changed.connect(_on_health_changed)
 	sprite.frame_changed.connect(_on_sprite_frame_changed)
 	sprite.animation_finished.connect(_on_sprite_animation_finished)
+	Events.player_equipment_changed.connect(_on_equipment_changed)
+	Events.player_stats_changed.connect(_sync_from_game_state)
+	GameManager.seed_starting_loadout(starting_loadout)
+	_sync_from_game_state()
 	# Defer so HUD/other listeners have finished their own _ready().
 	_broadcast_stats.call_deferred()
 
@@ -145,10 +174,9 @@ func _process(_delta: float) -> void:
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
-## Add hearts (sub-weapon ammo), clamped to [member max_hearts].
+## Add hearts (sub-weapon ammo), clamped to the current maximum.
 func add_hearts(amount: int) -> void:
-	hearts = clampi(hearts + amount, 0, max_hearts)
-	Events.player_hearts_changed.emit(hearts)
+	GameManager.add_hearts(amount)
 
 
 ## Restore HP.
@@ -158,9 +186,12 @@ func heal(amount: int) -> void:
 
 ## Currently equipped sub-weapon, or null.
 func get_current_subweapon() -> SubWeaponData:
-	if subweapons.is_empty():
-		return null
-	return subweapons[subweapon_index % subweapons.size()]
+	return GameManager.get_subweapon()
+
+
+## True while Vesper may double jump: the Leap Stone has to have been found.
+func can_double_jump() -> bool:
+	return GameManager.has_ability(GameManager.ABILITY_DOUBLE_JUMP)
 
 
 # ---------------------------------------------------------------------------
@@ -168,7 +199,7 @@ func get_current_subweapon() -> SubWeaponData:
 # ---------------------------------------------------------------------------
 func _state_grounded(delta: float) -> void:
 	_apply_gravity(delta)
-	var input_x: float = Input.get_axis(&"move_left", &"move_right")
+	var input_x: float = _move_input()
 
 	if not is_on_floor():
 		_coyote_timer = coyote_time
@@ -176,7 +207,7 @@ func _state_grounded(delta: float) -> void:
 		return
 	if _try_common_actions():
 		return
-	if Input.is_action_pressed(&"move_down"):
+	if _is_holding_down():
 		_change_state(State.CROUCH)
 		return
 
@@ -191,7 +222,7 @@ func _state_grounded(delta: float) -> void:
 
 
 func _state_air(delta: float) -> void:
-	var input_x: float = Input.get_axis(&"move_left", &"move_right")
+	var input_x: float = _move_input()
 	_apply_gravity(delta)
 
 	# Variable jump height.
@@ -206,7 +237,7 @@ func _state_air(delta: float) -> void:
 		if _coyote_timer > 0.0:
 			_start_jump(jump_velocity)
 			return
-		if can_double_jump and not _has_double_jumped:
+		if can_double_jump() and not _has_double_jumped:
 			_has_double_jumped = true
 			_start_jump(double_jump_velocity)
 			_play_somersault()
@@ -238,10 +269,10 @@ func _state_crouch(delta: float) -> void:
 	if Input.is_action_just_pressed(&"backdash") and _backdash_cooldown_timer <= 0.0:
 		_change_state(State.BACKDASH)
 		return
-	if not Input.is_action_pressed(&"move_down"):
+	if not _is_holding_down():
 		_change_state(State.IDLE)
 		return
-	_update_facing(Input.get_axis(&"move_left", &"move_right"))
+	_update_facing(_move_input())
 	_play(&"crouch")
 
 
@@ -251,7 +282,7 @@ func _state_attack(delta: float) -> void:
 		_move_horizontal(0.0, ground_friction, delta)
 	else:
 		# Aerial attacks keep momentum but allow drift; no turning mid-swing.
-		var input_x: float = Input.get_axis(&"move_left", &"move_right")
+		var input_x: float = _move_input()
 		_move_horizontal(input_x * run_speed, air_acceleration, delta)
 
 
@@ -306,16 +337,11 @@ func _enter_state(new_state: State) -> void:
 		State.CROUCH:
 			_set_crouch_shape(true)
 		State.ATTACK:
-			_is_crouch_attack = is_on_floor() and Input.is_action_pressed(&"move_down")
+			_is_crouch_attack = is_on_floor() and _is_holding_down()
 			_set_crouch_shape(_is_crouch_attack)
-			var anim: StringName = &"attack"
-			if _is_crouch_attack:
-				anim = &"attack_crouch"
-			elif not is_on_floor():
-				anim = &"attack_air"
-			sprite.speed_scale = weapon.speed_scale if weapon else 1.0
-			_play(anim, true)
-			Audio.play_sfx(weapon.swing_sfx if weapon else &"sword_swing", 0.08)
+			sprite.speed_scale = _swinging.speed_scale if _swinging else 1.0
+			_play(_attack_animation(), true)
+			Audio.play_sfx(_swinging.swing_sfx if _swinging else &"sword_swing", 0.08)
 		State.THROW:
 			_thrown_this_state = false
 			_play(&"throw", true)
@@ -336,6 +362,7 @@ func _exit_state(old_state: State) -> void:
 			weapon_hitbox.deactivate()
 			sprite.speed_scale = 1.0
 			_set_crouch_shape(false)
+			_swinging = null
 
 
 ## Actions available from any grounded, non-crouching state.
@@ -346,7 +373,7 @@ func _try_common_actions() -> bool:
 	if _try_attack_or_throw():
 		return true
 	if Input.is_action_just_pressed(&"switch_subweapon"):
-		_cycle_subweapon()
+		GameManager.cycle_subweapon()
 	if Input.is_action_just_pressed(&"backdash") and _backdash_cooldown_timer <= 0.0:
 		_change_state(State.BACKDASH)
 		return true
@@ -355,7 +382,7 @@ func _try_common_actions() -> bool:
 
 func _try_attack_or_throw() -> bool:
 	var wants_throw: bool = Input.is_action_just_pressed(&"subweapon") \
-		or (Input.is_action_just_pressed(&"attack") and Input.is_action_pressed(&"move_up"))
+		or (Input.is_action_just_pressed(&"attack") and _is_holding_up())
 	if wants_throw and _can_throw_subweapon():
 		_change_state(State.THROW)
 		return true
@@ -363,9 +390,45 @@ func _try_attack_or_throw() -> bool:
 		Audio.play_sfx(&"no_hearts")  # Dedicated button pressed but can't throw.
 		return false
 	if Input.is_action_just_pressed(&"attack") and weapon != null:
-		_change_state(State.ATTACK)
-		return true
+		return _start_swing(weapon)
+	if Input.is_action_just_pressed(&"attack_secondary") and secondary_weapon != null:
+		return _start_swing(secondary_weapon)
 	return false
+
+
+## Begin a melee swing with [param with]. Returns true if the state changed.
+func _start_swing(with: WeaponData) -> bool:
+	_swinging = with
+	_change_state(State.ATTACK)
+	return true
+
+
+# ---------------------------------------------------------------------------
+# Reading the stick
+#
+# An analog stick is read as a *direction*, not a speed. The classics run at
+# one pace, and half-speed creeping would fight the run cycle, so anything
+# past the deadzone means "run" — exactly like the d-pad or a key.
+# ---------------------------------------------------------------------------
+## -1, 0 or 1. (Drop the [method signf] for analog creep speeds.)
+func _move_input() -> float:
+	return signf(Input.get_axis(&"move_left", &"move_right"))
+
+
+## True while the player means "down" rather than "run, with the stick
+## happening to sit a little low". Without the comparison, running with a
+## stick pushed down-forward would crouch; on a d-pad or keyboard both axes
+## read 1.0, so holding Down + Right still crouches like it always did.
+func _is_holding_down() -> bool:
+	var down: float = Input.get_action_strength(&"move_down")
+	return down > 0.0 and down >= absf(Input.get_axis(&"move_left", &"move_right"))
+
+
+## Same rule for "up", which arms the classic Up + Attack sub-weapon throw:
+## a stick tilted up-forward while attacking should swing, not throw.
+func _is_holding_up() -> bool:
+	var up: float = Input.get_action_strength(&"move_up")
+	return up > 0.0 and up >= absf(Input.get_axis(&"move_left", &"move_right"))
 
 
 # ---------------------------------------------------------------------------
@@ -427,6 +490,7 @@ func _update_timers(delta: float) -> void:
 		_jump_buffer_timer = maxf(0.0, _jump_buffer_timer - delta)
 	_coyote_timer = maxf(0.0, _coyote_timer - delta)
 	_backdash_cooldown_timer = maxf(0.0, _backdash_cooldown_timer - delta)
+	_subweapon_cooldown_timer = maxf(0.0, _subweapon_cooldown_timer - delta)
 
 	if _drop_through_timer > 0.0:
 		_drop_through_timer -= delta
@@ -449,11 +513,20 @@ func _after_move() -> void:
 	_was_on_floor = on_floor
 
 
+## Shrink (or restore) the body and the hurtbox together, so crouching really
+## does duck under things rather than only looking like it (SPEC 4.1).
 func _set_crouch_shape(crouching: bool) -> void:
-	var rect_shape := body_shape.shape as RectangleShape2D
-	var size: Vector2 = CROUCH_SHAPE_SIZE if crouching else STAND_SHAPE_SIZE
+	_resize(body_shape, CROUCH_SHAPE_SIZE if crouching else STAND_SHAPE_SIZE)
+	_resize(hurt_shape, CROUCH_HURT_SIZE if crouching else STAND_HURT_SIZE)
+
+
+## Resize a rectangle collision shape and keep its bottom edge on the feet.
+func _resize(shape: CollisionShape2D, size: Vector2) -> void:
+	var rect_shape := shape.shape as RectangleShape2D
+	if rect_shape == null:
+		return
 	rect_shape.size = size
-	body_shape.position.y = -size.y * 0.5
+	shape.position.y = -size.y * 0.5
 
 
 # ---------------------------------------------------------------------------
@@ -484,9 +557,9 @@ func _drop_through_platform() -> void:
 func _on_sprite_frame_changed() -> void:
 	match state:
 		State.ATTACK:
-			if weapon == null:
+			if _swinging == null:
 				return
-			if weapon.is_frame_active(sprite.frame):
+			if _swinging.is_frame_active(sprite.frame):
 				if not weapon_hitbox.is_active:
 					_configure_weapon_hitbox()
 					weapon_hitbox.activate()
@@ -501,23 +574,42 @@ func _on_sprite_frame_changed() -> void:
 func _on_sprite_animation_finished() -> void:
 	if state in [State.ATTACK, State.THROW]:
 		if is_on_floor():
-			_change_state(State.CROUCH if Input.is_action_pressed(&"move_down") else State.IDLE)
+			_change_state(State.CROUCH if _is_holding_down() else State.IDLE)
 		else:
 			_change_state(State.FALL)
 
 
+## Attack animation for the swinging weapon in the current stance. Weapons
+## that ship no variant of their own fall back to the default swing.
+func _attack_animation() -> StringName:
+	var airborne: bool = not is_on_floor()
+	if _swinging == null:
+		return &"attack"
+	var anim: StringName = _swinging.get_attack_animation(_is_crouch_attack, airborne)
+	if sprite.sprite_frames != null and not sprite.sprite_frames.has_animation(anim):
+		push_warning("Weapon '%s' has no '%s' animation; using the default swing."
+			% [_swinging.display_name, anim])
+		if _is_crouch_attack:
+			return &"attack_crouch"
+		return &"attack_air" if airborne else &"attack"
+	return anim
+
+
 func _configure_weapon_hitbox() -> void:
 	var rect_shape := weapon_shape.shape as RectangleShape2D
-	rect_shape.size = weapon.hitbox_size
-	var offset: Vector2 = weapon.crouch_hitbox_offset if _is_crouch_attack else weapon.hitbox_offset
+	rect_shape.size = _swinging.hitbox_size
+	var offset: Vector2 = _swinging.crouch_hitbox_offset if _is_crouch_attack else _swinging.hitbox_offset
 	weapon_shape.position = Vector2(offset.x * facing, offset.y)
-	weapon_hitbox.damage = weapon.damage
-	weapon_hitbox.knockback_force = weapon.knockback
+	weapon_hitbox.damage = _swinging.damage
+	weapon_hitbox.attack_power = GameManager.get_strength()
+	weapon_hitbox.knockback_force = _swinging.knockback
 
 
 func _can_throw_subweapon() -> bool:
 	var sub: SubWeaponData = get_current_subweapon()
 	if sub == null or sub.projectile_scene == null or hearts < sub.heart_cost:
+		return false
+	if _subweapon_cooldown_timer > 0.0:
 		return false
 	_active_projectiles.assign(_active_projectiles.filter(func(n: Node) -> bool: return is_instance_valid(n)))
 	return _active_projectiles.size() < sub.max_active
@@ -532,36 +624,39 @@ func _spawn_subweapon() -> void:
 		push_error("Sub-weapon '%s' scene root must be a Projectile." % sub.display_name)
 		return
 	add_hearts(-sub.heart_cost)
+	_subweapon_cooldown_timer = sub.cooldown
 	projectile.global_position = global_position + Vector2(sub.spawn_offset.x * facing, sub.spawn_offset.y)
 	# Projectiles live in the world, not under the player, so they don't
 	# move with us. The player's parent is the room's actor container.
 	get_parent().add_child(projectile)
 	projectile.launch(facing)
+	# A sub-weapon with its own base damage overrides the projectile scene's,
+	# so the same scene can serve a starter dagger and a late-game one.
+	if sub.damage > 0:
+		projectile.hitbox.damage = sub.damage
+	projectile.hitbox.attack_power = GameManager.get_strength()
 	projectile.hitbox.hit_landed.connect(_on_weapon_hit_landed.bind(0.03))
 	_active_projectiles.append(projectile)
 	Audio.play_sfx(sub.throw_sfx)
 
 
-func _cycle_subweapon() -> void:
-	if subweapons.size() < 2:
-		return
-	subweapon_index = (subweapon_index + 1) % subweapons.size()
-	Events.player_subweapon_changed.emit(get_current_subweapon())
-
-
 func _on_melee_hit_landed(_hurtbox: Hurtbox) -> void:
 	# Hit-stop length is a per-weapon tuning value (heavier weapons = longer).
-	GameFeel.hit_stop(weapon.hit_stop if weapon else 0.05)
+	var stop_time: float = _swinging.hit_stop if _swinging else 0.05
+	GameFeel.hit_stop(stop_time)
+	GameFeel.impact_rumble(stop_time)
 
 
 func _on_weapon_hit_landed(_hurtbox: Hurtbox, stop_time: float) -> void:
 	GameFeel.hit_stop(stop_time)
+	GameFeel.impact_rumble(stop_time)
 
 
 func _on_hit_received(hitbox: Hitbox) -> void:
 	if state == State.DEAD:
 		return
-	var dealt: int = health.take_damage(hitbox.damage)
+	var dealt: int = health.take_damage(
+		Combat.compute_damage(hitbox.damage, hitbox.attack_power, GameManager.get_defense()))
 	Events.damage_dealt.emit(dealt, global_position + Vector2(0, -40), true)
 	if health.is_dead:
 		_die()
@@ -587,6 +682,31 @@ func _die() -> void:
 
 
 # ---------------------------------------------------------------------------
+# Equipment & stats
+# ---------------------------------------------------------------------------
+## Finishing a swing under a weapon that has just been swapped out would put
+## its hitbox on the wrong frames, so cancel anything in progress.
+func _on_equipment_changed(slot: int, _item: ItemData) -> void:
+	if slot != GameManager.Slot.PRIMARY_WEAPON and slot != GameManager.Slot.SECONDARY_WEAPON:
+		return
+	if state == State.ATTACK:
+		_change_state(State.IDLE if is_on_floor() else State.FALL)
+	else:
+		weapon_hitbox.deactivate()
+
+
+## Mirror [GameManager]'s HP and Constitution into the local health component.
+## Runs on level-ups, equipment changes, saves and loads.
+func _sync_from_game_state() -> void:
+	var stored_hp: int = GameManager.current_hp
+	_syncing_health = true
+	health.max_health = GameManager.get_max_hp()
+	health.current_health = 0 if state == State.DEAD else clampi(stored_hp, 0, health.max_health)
+	_syncing_health = false
+	Events.player_health_changed.emit(health.current_health, health.max_health)
+
+
+# ---------------------------------------------------------------------------
 # Presentation
 # ---------------------------------------------------------------------------
 func _play(anim: StringName, restart: bool = false) -> void:
@@ -597,11 +717,17 @@ func _play(anim: StringName, restart: bool = false) -> void:
 
 
 func _on_health_changed(current: int, maximum: int) -> void:
+	if not _syncing_health:
+		GameManager.current_hp = current
 	Events.player_health_changed.emit(current, maximum)
 
 
 func _broadcast_stats() -> void:
 	Events.player_health_changed.emit(health.current_health, health.max_health)
 	Events.player_mp_changed.emit(mp, max_mp)
-	Events.player_hearts_changed.emit(hearts)
+	Events.player_hearts_changed.emit(GameManager.hearts, GameManager.max_hearts)
+	Events.player_gold_changed.emit(GameManager.gold)
+	Events.player_experience_changed.emit(
+		GameManager.stats.experience, GameManager.stats.xp_to_next_level(), GameManager.stats.level)
+	Events.player_weapon_changed.emit(weapon)
 	Events.player_subweapon_changed.emit(get_current_subweapon())

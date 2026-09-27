@@ -61,6 +61,9 @@ BOOT_HI = (70, 58, 76)
 EYE = (230, 40, 48)
 BLADE = (226, 234, 246)
 BLADE_SH = (132, 144, 178)
+LEATHER = (112, 46, 48)
+LEATHER_HI = (168, 80, 68)
+LEATHER_SH = (58, 24, 32)
 
 # Bone / undead
 BONE = (232, 224, 200)

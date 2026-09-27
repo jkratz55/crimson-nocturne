@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ArmorData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/armor_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/armor_moonsteel.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"moonsteel_plate"
+display_name = "Moonsteel Plate"
+description = "Forged under a waxing moon and quenched in meltwater. Cold to the touch, and heavier than it looks."
+icon = ExtResource("2_icon")
+price = 900
+constitution_bonus = 2
+defense = 12

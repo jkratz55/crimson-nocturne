@@ -1,8 +1,10 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
 [ext_resource type="PackedScene" path="res://scenes/rooms/castle_hall.tscn" id="2_room"]
 [ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="3_hud"]
+[ext_resource type="PackedScene" path="res://scenes/ui/pause_menu.tscn" id="4_pause_menu"]
+[ext_resource type="PackedScene" path="res://scenes/ui/save_menu.tscn" id="5_save_menu"]
 
 [node name="Main" type="Node"]
 script = ExtResource("1_main")
@@ -14,6 +16,10 @@ process_mode = 1
 
 [node name="HUD" parent="." instance=ExtResource("3_hud")]
 process_mode = 1
+
+[node name="PauseMenu" parent="." instance=ExtResource("4_pause_menu")]
+
+[node name="SaveMenu" parent="." instance=ExtResource("5_save_menu")]
 
 [node name="Overlay" type="CanvasLayer" parent="."]
 layer = 20

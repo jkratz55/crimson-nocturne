@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ConsumableData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/consumable_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/vial_of_vitae.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"vial_of_vitae"
+display_name = "Vial of Vitae"
+description = "Blood, thickened with resin and something the apothecary would not name. Restores 40 HP."
+icon = ExtResource("2_icon")
+price = 80
+heal_amount = 40
+use_sfx = &"heart_pickup"

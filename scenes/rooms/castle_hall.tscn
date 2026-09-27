@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3]
+[gd_scene load_steps=20 format=3]
 
 [ext_resource type="Script" path="res://scripts/world/room.gd" id="1_room"]
 [ext_resource type="AudioStream" path="res://assets/audio/music/nocturne_of_the_crimson_hall.ogg" id="2_music"]
@@ -14,9 +14,15 @@
 [ext_resource type="PackedScene" path="res://scenes/enemies/bat.tscn" id="12_bat"]
 [ext_resource type="PackedScene" path="res://scenes/fx/death_flame.tscn" id="13_spawn_fx"]
 [ext_resource type="Script" path="res://scripts/world/room_camera.gd" id="14_camera"]
+[ext_resource type="PackedScene" path="res://scenes/world/save_point.tscn" id="15_save"]
+[ext_resource type="PackedScene" path="res://scenes/pickups/world_item.tscn" id="16_world_item"]
+[ext_resource type="Resource" path="res://resources/relics/leap_stone.tres" id="17_leap_stone"]
+[ext_resource type="Resource" path="res://resources/accessories/ruby_ring.tres" id="18_ruby_ring"]
+[ext_resource type="Texture2D" path="res://assets/sprites/heart_max_up.png" id="19_heart_max"]
 
 [node name="CastleHall" type="Node2D" node_paths=PackedStringArray("player", "camera")]
 script = ExtResource("1_room")
+room_id = &"crimson_hall"
 display_name = "Crimson Hall"
 size_in_tiles = Vector2i(48, 18)
 music = ExtResource("2_music")
@@ -72,6 +78,31 @@ position = Vector2(520, 224)
 
 [node name="Candle5" parent="Candles" instance=ExtResource("8_candle")]
 position = Vector2(664, 168)
+
+[node name="SavePoint" parent="." instance=ExtResource("15_save")]
+position = Vector2(104, 256)
+
+[node name="WorldItems" type="Node2D" parent="."]
+
+[node name="hall_leap_stone" parent="WorldItems" instance=ExtResource("16_world_item")]
+position = Vector2(296, 256)
+world_item_id = &"hall_leap_stone"
+grant = 0
+item = ExtResource("17_leap_stone")
+
+[node name="hall_heart_max" parent="WorldItems" instance=ExtResource("16_world_item")]
+position = Vector2(56, 88)
+world_item_id = &"hall_heart_max"
+grant = 1
+amount = 5
+icon_override = ExtResource("19_heart_max")
+
+[node name="hall_ruby_ring" parent="WorldItems" instance=ExtResource("16_world_item")]
+position = Vector2(640, 184)
+world_item_id = &"hall_ruby_ring"
+grant = 0
+item = ExtResource("18_ruby_ring")
+auto_equip = true
 
 [node name="Actors" type="Node2D" parent="."]
 

@@ -268,6 +268,11 @@ def tone(dur: float, f0: float, f1: float, decay: float, shape: str = "sine") ->
     return sig * np.exp(-t * decay)
 
 
+def delay(x: np.ndarray, seconds: float) -> np.ndarray:
+    """Pad a signal with silence so it lands later in the mix."""
+    return np.concatenate([np.zeros(int(seconds * SR)), x])
+
+
 def mix(*xs: np.ndarray) -> np.ndarray:
     """Sum signals of different lengths (zero-padded)."""
     out = np.zeros(max(len(x) for x in xs))
@@ -298,6 +303,13 @@ def render_sfx() -> None:
         "bat_screech": norm(mix(tone(0.18, 2400, 3200, 12, "square") * 0.2, sweep_noise(0.18, 5000, 7000, 12) * 0.4), 0.35),
         "player_death": norm(mix(tone(1.2, 220, 55, 2.5, "square") * 0.4, sweep_noise(1.2, 2000, 100, 3)), 0.7),
         "no_hearts": norm(tone(0.1, 180, 180, 20, "square"), 0.3),
+        # Leather swish, then the supersonic crack a beat later.
+        "whip_crack": norm(mix(sweep_noise(0.14, 400, 3800, 15) * 0.45,
+                               delay(sweep_noise(0.2, 9000, 900, 34), 0.085),
+                               delay(tone(0.1, 800, 140, 40) * 0.22, 0.085)), 0.7),
+        # Menu blips: a dry tick to move the cursor, a rising pair to equip.
+        "menu_move": norm(tone(0.05, 1200, 900, 45) * 0.6, 0.3),
+        "menu_select": norm(np.concatenate([tone(0.05, 880, 880, 18), tone(0.14, 1320, 1320, 16)]), 0.4),
     }
     for name, data in fx.items():
         write_wav(os.path.join(SFX, f"{name}.wav"), data)

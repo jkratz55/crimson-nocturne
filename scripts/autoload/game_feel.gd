@@ -1,9 +1,12 @@
 ## "Juice" helpers (autoload: [code]GameFeel[/code]).
 ##
-## Hit-stop (a few frames of near-frozen time on impact) and screen shake
-## are what make melee combat feel weighty. Keeping them in one place means
-## designers can tune or globally disable them (e.g. an accessibility
-## "reduce screen shake" option) without touching combat code.
+## Hit-stop (a few frames of near-frozen time on impact), screen shake and
+## pad rumble are what make melee combat feel weighty. Keeping them in one
+## place means designers can tune or globally disable them (e.g. an
+## accessibility "reduce screen shake" option) without touching combat code.
+##
+## Rumble is expressed here in the same terms as shake and routed to
+## [code]Controls[/code], which owns the pad; it is a no-op on keyboard.
 ##
 ## [b]Implementation note[/b]: hit-stop is tracked against the real-time
 ## clock ([method Time.get_ticks_usec]) in [method _process] rather than with
@@ -50,6 +53,17 @@ func clear_hit_stop() -> void:
 
 
 ## Request a camera shake. The active [RoomCamera] listens via [Events].
+##
+## The pad shakes with the screen — it is the same event in the player's
+## hands — but through its own switch, since someone may turn the screen
+## shake off and still want to feel the hits.
 func shake(strength: float, duration: float = 0.2) -> void:
 	if screen_shake_enabled:
 		Events.camera_shake_requested.emit(strength, duration)
+	Controls.rumble(strength * 0.09, strength * 0.16, duration)
+
+
+## The short kick that says "that connected". [param hit_stop_duration] is the
+## weapon's own hit-stop, so heavier weapons kick harder and longer.
+func impact_rumble(hit_stop_duration: float) -> void:
+	Controls.rumble(0.45, 0.22, clampf(hit_stop_duration * 1.8, 0.05, 0.3))

@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="RelicData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/relic_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/leap_stone.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"leap_stone"
+display_name = "Leap Stone"
+description = "It will not fall. Held tight, neither will you — not straight away."
+icon = ExtResource("2_icon")
+ability = &"double_jump"

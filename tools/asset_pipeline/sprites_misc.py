@@ -1,6 +1,6 @@
 """
 Enemies (skeleton, bat), projectiles, pickups, breakable candles,
-combat effects and HUD pieces.
+combat effects, HUD pieces and the equip-menu frame.
 """
 from __future__ import annotations
 
@@ -12,8 +12,9 @@ from PIL import Image
 
 from common import (
     BAT, BAT_SH, BAT_WING, BLADE, BLADE_SH, BONE, BONE_DK, BONE_SH, CAPE_IN, EYE,
-    FIRE_1, FIRE_2, FIRE_3, FIRE_4, HEART, HEART_HI, HEART_SH, OUTLINE, SPRITES, TRIM,
-    TRIM_SH, UI, Point, SheetBuilder, line, new_canvas, outline, polar, poly, px, rect,
+    FIRE_1, FIRE_2, FIRE_3, FIRE_4, HEART, HEART_HI, HEART_SH, LEATHER, LEATHER_HI,
+    LEATHER_SH, OUTLINE, SPRITES, TRIM, TRIM_SH, UI,
+    Point, SheetBuilder, line, new_canvas, outline, polar, poly, px, rect,
 )
 
 
@@ -222,6 +223,33 @@ def axe() -> Image.Image:
     return outline(img)
 
 
+def sword_icon() -> Image.Image:
+    """16x16 menu icon: the short sword, held point-up."""
+    img, d = new_canvas(16, 16)
+    hilt, tip = (5, 11), (13, 3)
+    line(d, [hilt, tip], BLADE_SH, 3)
+    line(d, [(5, 10), (12, 3)], BLADE, 1)
+    line(d, [(3, 9), (7, 13)], TRIM, 2)                 # cross-guard
+    line(d, [(4, 12), (2, 14)], TRIM_SH, 2)             # grip
+    px(img, 2, 14, TRIM)                                # pommel
+    px(img, 13, 2, BLADE)                               # point
+    return outline(img)
+
+
+def whip_icon() -> Image.Image:
+    """16x16 menu icon: a coiled lash with the tail snapping up-right."""
+    img, d = new_canvas(16, 16)
+    coil = [polar((6, 9), a, 4.0) for a in range(-40, 300, 20)]
+    line(d, coil, LEATHER, 2)
+    line(d, [polar((6, 9), a, 4.0) for a in range(-40, 120, 20)], LEATHER_HI, 1)
+    line(d, [(7, 5), (11, 3), (14, 5)], LEATHER_HI, 1)  # tail snapping out
+    px(img, 14, 5, BLADE)
+    line(d, [(2, 14), (5, 11)], TRIM_SH, 3)             # handle
+    line(d, [(2, 14), (4, 12)], TRIM, 1)
+    px(img, 6, 10, LEATHER_SH)
+    return outline(img)
+
+
 def bone_projectile() -> Image.Image:
     img, d = new_canvas(12, 12)
     line(d, [(3, 8), (8, 3)], BONE, 2)
@@ -253,6 +281,8 @@ def build_items() -> None:
     heart(2).save(os.path.join(SPRITES, "heart_big.png"))
     dagger().save(os.path.join(SPRITES, "dagger.png"))
     axe().save(os.path.join(SPRITES, "axe.png"))
+    sword_icon().save(os.path.join(SPRITES, "sword.png"))
+    whip_icon().save(os.path.join(SPRITES, "whip.png"))
     bone_projectile().save(os.path.join(SPRITES, "bone.png"))
     sb = SheetBuilder("candle", 16, 32)
     sb.add("burn", [candle(0), candle(1), candle(2), candle(1)], 10, True)
@@ -292,6 +322,33 @@ def build_hud() -> None:
     icon.save(os.path.join(UI, "heart_icon.png"))
 
 
+def build_menu_ui() -> None:
+    """Nine-patch panel (14px margins) plus the cursor and equipped marker."""
+    img, d = new_canvas(48, 48)
+    rect(d, 1, 1, 46, 46, (12, 9, 22, 232))
+    rect(d, 0, 0, 47, 47, TRIM_SH)                       # outer bevel
+    rect(d, 1, 1, 46, 46, (12, 9, 22, 232))
+    rect(d, 2, 2, 45, 45, TRIM)                          # gold rule
+    rect(d, 3, 3, 44, 44, (12, 9, 22, 232))
+    for ox, oy, sx, sy in ((3, 3, 1, 1), (44, 3, -1, 1), (3, 44, 1, -1), (44, 44, -1, -1)):
+        # corner filigree, mirrored into each corner (stays inside the margin)
+        line(d, [(ox + 2 * sx, oy + 5 * sy), (ox + 5 * sx, oy + 2 * sy)], TRIM, 1)
+        px(img, ox + 2 * sx, oy + 2 * sy, TRIM)
+        px(img, ox + 7 * sx, oy + 2 * sy, TRIM_SH)
+        px(img, ox + 2 * sx, oy + 7 * sy, TRIM_SH)
+    img.save(os.path.join(UI, "menu_frame.png"))
+
+    cur, cd = new_canvas(7, 9)
+    poly(cd, [(1, 1), (5, 4), (1, 7)], TRIM)
+    poly(cd, [(1, 2), (3, 4), (1, 6)], (255, 236, 168))
+    outline(cur).save(os.path.join(UI, "cursor.png"))
+
+    mark, md = new_canvas(7, 7)
+    poly(md, [(3, 1), (5, 3), (3, 5), (1, 3)], TRIM)
+    px(mark, 3, 3, (255, 244, 200))
+    outline(mark).save(os.path.join(UI, "marker_equipped.png"))
+
+
 def build() -> None:
     build_skeleton()
     build_bat()
@@ -299,6 +356,7 @@ def build() -> None:
     build_death_flame()
     build_items()
     build_hud()
+    build_menu_ui()
 
 
 if __name__ == "__main__":

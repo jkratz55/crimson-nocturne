@@ -6,6 +6,7 @@
 
 [resource]
 script = ExtResource("1_script")
+id = &"dagger"
 display_name = "Dagger"
 icon = ExtResource("2_icon")
 projectile_scene = ExtResource("3_scene")
@@ -13,3 +14,7 @@ heart_cost = 1
 max_active = 3
 spawn_offset = Vector2(12, -30)
 throw_sfx = &"dagger_throw"
+price = 250
+damage = 6
+cooldown = 0.12
+description = "A weighted throwing knife. Cheap in hearts and quick to leave the hand."

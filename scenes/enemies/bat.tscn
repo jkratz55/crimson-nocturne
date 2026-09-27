@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3]
+[gd_scene load_steps=17 format=3]
 
 [ext_resource type="Script" path="res://scripts/enemies/bat.gd" id="1_script"]
 [ext_resource type="SpriteFrames" path="res://resources/sprite_frames/bat_frames.tres" id="2_frames"]
@@ -10,6 +10,7 @@
 [ext_resource type="PackedScene" path="res://scenes/pickups/heart_big.tscn" id="8_heart_big"]
 [ext_resource type="PackedScene" path="res://scenes/fx/death_flame.tscn" id="9_death"]
 [ext_resource type="PackedScene" path="res://scenes/fx/hit_spark.tscn" id="10_spark"]
+[ext_resource type="PackedScene" path="res://scenes/pickups/gold.tscn" id="11_gold"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_flash"]
 resource_local_to_scene = true
@@ -39,6 +40,10 @@ contact_damage = 4
 heart_drop_chance = 0.35
 small_heart_scene = ExtResource("7_heart_small")
 big_heart_scene = ExtResource("8_heart_big")
+attack_power = 2
+gold_drop_chance = 0.2
+gold_amount_range = Vector2i(3, 9)
+gold_scene = ExtResource("11_gold")
 experience = 3
 death_effect_scene = ExtResource("9_death")
 hit_effect_scene = ExtResource("10_spark")
@@ -53,6 +58,7 @@ shape = SubResource("CircleShape2D_body")
 
 [node name="HealthComponent" type="Node" parent="."]
 script = ExtResource("4_health")
+defense = 0
 max_health = 8
 
 [node name="Hurtbox" type="Area2D" parent="."]

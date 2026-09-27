@@ -10,6 +10,11 @@
 class_name Room
 extends Node2D
 
+## Stable id for save data: the checkpoint the player last used, and the
+## fog-of-war record of which rooms have been seen (SPEC 3, 4.4.3). Unlike
+## [member display_name] it is never shown, so it can stay put while the
+## room's name changes.
+@export var room_id: StringName = &"room"
 @export var display_name: String = "Room"
 ## Room size in tiles. The camera is clamped to this rectangle.
 @export var size_in_tiles: Vector2i = Vector2i(64, 18)
@@ -21,6 +26,8 @@ extends Node2D
 
 
 func _ready() -> void:
+	GameManager.mark_room_explored(room_id)
+	place_player_at_checkpoint()
 	if camera:
 		camera.set_room_bounds(get_bounds())
 		camera.target = player
@@ -30,6 +37,16 @@ func _ready() -> void:
 		Audio.play_music(music)
 	Events.damage_dealt.connect(_on_damage_dealt)
 	Events.area_entered.emit.call_deferred(display_name)
+
+
+## Put the player back on the save point they last used, if it is in this
+## room. Called before the camera is set up so it does not snap afterwards.
+## Returns true if the player was actually moved.
+func place_player_at_checkpoint() -> bool:
+	if player == null or GameManager.checkpoint_room != room_id:
+		return false
+	player.global_position = GameManager.checkpoint_position
+	return true
 
 
 ## Room rectangle in world pixels.

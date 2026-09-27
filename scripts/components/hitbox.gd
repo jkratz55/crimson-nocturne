@@ -17,7 +17,12 @@ extends Area2D
 ## Emitted after a hurtbox accepted this hitbox's hit.
 signal hit_landed(hurtbox: Hurtbox)
 
+## Base damage, before [method Combat.compute_damage] applies the wielder's
+## power and the victim's Defense.
 @export_range(0, 999) var damage: int = 1
+## The wielder's Strength (or an enemy's equivalent). Set at runtime by
+## whatever owns the hitbox; 0 means "the base damage is the whole story".
+@export_range(0, 999) var attack_power: int = 0
 ## Horizontal knockback speed applied to the victim (px/s).
 @export var knockback_force: float = 120.0
 ## If true a given hurtbox can only be hit once until [method activate] is called again.

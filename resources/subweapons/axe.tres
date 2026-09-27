@@ -6,6 +6,7 @@
 
 [resource]
 script = ExtResource("1_script")
+id = &"axe"
 display_name = "Axe"
 icon = ExtResource("2_icon")
 projectile_scene = ExtResource("3_scene")
@@ -13,3 +14,7 @@ heart_cost = 2
 max_active = 2
 spawn_offset = Vector2(8, -34)
 throw_sfx = &"axe_throw"
+price = 500
+damage = 12
+cooldown = 0.2
+description = "Hurled in a high arc, it comes down on whatever is perched above you."

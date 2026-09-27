@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ArmorData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/armor_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/armor_leather.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"leather_cuirass"
+display_name = "Leather Cuirass"
+description = "Boiled hide over a linen shirt. It will not stop a blade, but it will stop a bat."
+icon = ExtResource("2_icon")
+price = 200
+defense = 4

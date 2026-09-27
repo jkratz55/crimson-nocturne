@@ -2,11 +2,14 @@
 Hero sprite generator — "Vesper", a dhampir swordsman.
 
 The character is rigged as a simple 2D skeleton (hip, shoulder, head,
-two legs, two arms, cape trailing edge, sword angle).  Each animation
+two legs, two arms, cape trailing edge, weapon).  Each animation
 frame is a `Pose`; the renderer draws the layers back-to-front and
-applies a dark outline pass.  Frames are 96x64 with the feet resting
-on y=60 and the body centred on x=48 (this is the sprite origin the
+applies a dark outline pass.  Frames are 128x64 with the feet resting
+on y=60 and the body centred on x=64 (this is the sprite origin the
 Godot scene is built around: sprite offset = (0, -28)).
+
+The frame is wider than the character needs so the whip's lash has room
+to extend a full body-length ahead of him without being clipped.
 """
 from __future__ import annotations
 
@@ -17,12 +20,13 @@ from PIL import Image
 
 from common import (
     BLADE, BLADE_SH, BOOT, BOOT_HI, CAPE_IN, CAPE_IN_HI, CAPE_OUT, COAT, COAT_HI, COAT_SH,
-    EYE, HAIR, HAIR_HI, PANTS, PANTS_SH, SKIN, SKIN_SH, TRIM, TRIM_SH,
-    Point, SheetBuilder, line, new_canvas, outline, polar, poly, px, rect,
+    EYE, HAIR, HAIR_HI, LEATHER, LEATHER_HI, LEATHER_SH, PANTS, PANTS_SH, SKIN, SKIN_SH,
+    TRIM, TRIM_SH,
+    Point, SheetBuilder, lerp, line, new_canvas, outline, polar, poly, px, rect,
 )
 
-FW, FH = 96, 64
-CX = 48
+FW, FH = 128, 64
+CX = 64
 FOOT_Y = 59
 
 
@@ -39,6 +43,10 @@ class Pose:
     hair: Point = (CX - 5, 30)
     sword: float | None = None       # blade angle in degrees (0 = right, 90 = down)
     sword_len: int = 22
+    # Whip lash: cubic curve control points, relative to the weapon hand.
+    whip: list[Point] | None = None
+    whip_behind: bool = False        # draw the lash behind the body (wind-up)
+    whip_vscale: float = 1.0         # squash the lash vertically (crouch)
     hem: float = 9                    # coat hem length below the hip
 
 
@@ -74,11 +82,47 @@ def _sword(img, d, hand: Point, angle: float, length: int) -> None:
     px(img, *pommel, TRIM)
 
 
+def _bezier(ctrl: list[Point], t: float) -> Point:
+    """De Casteljau evaluation for any number of control points."""
+    pts = list(ctrl)
+    while len(pts) > 1:
+        pts = [lerp(pts[i], pts[i + 1], t) for i in range(len(pts) - 1)]
+    return pts[0]
+
+
+WHIP_SEGMENTS = 18
+
+
+def _whip(img, d, hand: Point, ctrl: list[Point], vscale: float = 1.0) -> None:
+    """Draw the lash as a tapering curve springing from the weapon hand.
+
+    The curve thins from 3px of braided leather at the grip to a single
+    pixel at the steel tip, which is what sells the snap at this size.
+    """
+    pts = [hand] + [(hand[0] + dx, hand[1] + dy * vscale) for dx, dy in ctrl]
+    curve = [_bezier(pts, i / (WHIP_SEGMENTS - 1)) for i in range(WHIP_SEGMENTS)]
+    for i in range(len(curve) - 1):
+        t = i / (len(curve) - 2)
+        width = 3 if t < 0.14 else (2 if t < 0.46 else 1)
+        line(d, [curve[i], curve[i + 1]], LEATHER if t < 0.46 else LEATHER_HI, width)
+    for i in range(2, int(len(curve) * 0.45), 2):                # braided highlights
+        px(img, curve[i][0], curve[i][1] - 1, LEATHER_HI)
+        px(img, curve[i][0], curve[i][1] + 1, LEATHER_SH)
+    line(d, [hand, curve[2]], TRIM_SH, 3)                        # grip, over the lash
+    line(d, [hand, curve[1]], TRIM, 1)
+    px(img, *curve[-2], BLADE_SH)                                # steel tip
+    px(img, *curve[-1], BLADE)
+
+
 def render(p: Pose) -> Image.Image:
     img, d = new_canvas(FW, FH)
     sx, sy = p.shoulder
     hx, hy = p.hip
     cx, cy = p.head
+
+    # --- Lash trailing behind the body (wind-up frames) --------------------
+    if p.whip is not None and p.whip_behind:
+        _whip(img, d, p.front_arm[1], p.whip, p.whip_vscale)
 
     # --- Cape (behind everything) -----------------------------------------
     cape_poly = [(sx + 2, sy - 2), (sx - 4, sy - 2)] + p.cape + [(hx + 1, hy + 2)]
@@ -129,6 +173,9 @@ def render(p: Pose) -> Image.Image:
     _arm(img, d, (sx + 2, sy + 1), elbow, hand, back=False)
     if p.sword is not None:
         _sword(img, d, hand, p.sword, p.sword_len)
+        rect(d, hand[0] - 1, hand[1] - 1, hand[0] + 1, hand[1] + 1, SKIN)
+    if p.whip is not None and not p.whip_behind:
+        _whip(img, d, hand, p.whip, p.whip_vscale)
         rect(d, hand[0] - 1, hand[1] - 1, hand[0] + 1, hand[1] + 1, SKIN)
 
     return outline(img)
@@ -260,6 +307,36 @@ def attack_frames(base: Pose, lunge: bool) -> list[Image.Image]:
     return frames
 
 
+# Whip: coil behind -> arc overhead -> crack forward -> lash drops -> recover.
+# (elbow offset, hand offset, lash control points relative to the hand, behind?)
+WHIP_KEYS: list[tuple[Point, Point, list[Point], bool]] = [
+    ((-3, -4), (-6, -8), [(-6, -2), (-16, 2), (-12, 12)], True),
+    ((2, -6), (5, -9), [(-4, -8), (-16, -9), (-26, -3)], True),
+    ((7, -2), (13, -1), [(12, -5), (26, -3), (42, 3)], False),
+    ((7, 1), (13, 3), [(13, 2), (27, 6), (40, 12)], False),
+    ((5, 5), (8, 9), [(7, 5), (12, 13), (4, 19)], False),
+]
+
+
+def whip_attack_frames(base: Pose, lunge: bool, vscale: float = 1.0) -> list[Image.Image]:
+    """The same five-beat swing as the sword, but the reach is in the lash."""
+    frames = []
+    for i, (elb, hand, lash, behind) in enumerate(WHIP_KEYS):
+        p = replace(base)
+        sx, sy = p.shoulder
+        if lunge and i in (2, 3):
+            p = replace(p,
+                        front_leg=((CX + 8, 51), (CX + 11, FOOT_Y)),
+                        back_leg=((CX - 5, 51), (CX - 9, FOOT_Y)),
+                        cape=[(CX - 10, 36), (CX - 15, 47), (CX - 7, 56)])
+        p = replace(p,
+                    front_arm=((sx + elb[0], sy + elb[1]), (sx + hand[0], sy + hand[1])),
+                    back_arm=((sx - 4, sy + 4), (sx - 6, sy + 7)),
+                    whip=lash, whip_behind=behind, whip_vscale=vscale)
+        frames.append(render(p))
+    return frames
+
+
 def throw_frames() -> list[Image.Image]:
     frames = []
     keys = [((-3, -3), (-6, -5)), ((5, -2), (9, -3)), ((6, 3), (10, 5))]
@@ -321,6 +398,9 @@ def build() -> None:
     sheet.add("attack", attack_frames(Pose(shoulder=(CX + 2, 29), head=(CX + 3, 22)), True), 20, False)
     sheet.add("attack_crouch", attack_frames(crouch_pose(), False), 20, False)
     sheet.add("attack_air", attack_frames(jump_pose(False), False), 20, False)
+    sheet.add("attack_whip", whip_attack_frames(Pose(shoulder=(CX + 2, 29), head=(CX + 3, 22)), True), 20, False)
+    sheet.add("attack_whip_crouch", whip_attack_frames(crouch_pose(), False, 0.5), 20, False)
+    sheet.add("attack_whip_air", whip_attack_frames(jump_pose(False), False), 20, False)
     sheet.add("throw", throw_frames(), 16, False)
     sheet.add("backdash", backdash_frames(), 10, True)
     sheet.add("hurt", hurt_frames(), 1, False)

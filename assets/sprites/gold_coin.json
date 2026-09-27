@@ -1,0 +1,14 @@
+{
+  "frame_size": [
+    10,
+    10
+  ],
+  "animations": {
+    "spin": {
+      "frames": 6,
+      "fps": 12,
+      "loop": true,
+      "row": 0
+    }
+  }
+}

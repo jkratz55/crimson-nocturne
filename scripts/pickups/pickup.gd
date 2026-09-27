@@ -1,12 +1,16 @@
-## Collectible dropped by enemies and candles (hearts, and later money, items...).
+## Collectible dropped by enemies and candles: hearts, health and gold.
 ##
-## Small hearts drift down side-to-side like falling leaves; big hearts
-## drop straight. Pickups expire after [member lifetime] seconds, blinking
-## during the final stretch as a warning.
+## Small hearts drift down side-to-side like falling leaves; big hearts and
+## coins drop straight. Pickups expire after [member lifetime] seconds,
+## blinking during the final stretch as a warning.
+##
+## This is the [i]transient[/i] kind of loot — rolled from a drop table and
+## gone if you walk away. Unique, once-only things placed in the world by hand
+## are [WorldItem]s instead, and those are remembered in the save file.
 class_name Pickup
 extends CharacterBody2D
 
-enum Kind { HEARTS, HEALTH }
+enum Kind { HEARTS, HEALTH, GOLD }
 
 @export var kind: Kind = Kind.HEARTS
 @export var amount: int = 1
@@ -19,7 +23,8 @@ enum Kind { HEARTS, HEALTH }
 @export var collect_sfx: StringName = &"heart_pickup"
 
 @onready var collect_area: Area2D = $CollectArea
-@onready var sprite: Sprite2D = $Sprite
+## Sprite2D for a still pickup, AnimatedSprite2D for a spinning one.
+@onready var sprite: CanvasItem = $Sprite
 
 var _age: float = 0.0
 var _gravity: float = ProjectSettings.get_setting("physics/2d/default_gravity")
@@ -55,5 +60,7 @@ func _on_body_entered(body: Node2D) -> void:
 			player.add_hearts(amount)
 		Kind.HEALTH:
 			player.heal(amount)
+		Kind.GOLD:
+			GameManager.add_gold(amount)
 	Audio.play_sfx(collect_sfx)
 	queue_free()
