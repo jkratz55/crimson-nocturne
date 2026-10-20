@@ -1065,7 +1065,7 @@ class WeaponDraw:
     behind: bool = False             # under the body (anticipation: blade cocked behind)
     whip: list[Pt] = field(default_factory=list)   # lash control points after the hand
     spark: int = 0                   # 0 none, 1 burst, 2 fading
-    smear: tuple[Pt, Pt, Pt, float] | None = None   # (pivot, tip_from, tip_to, strength)
+    smear: tuple[Pt, Pt, Pt, float, float] | None = None   # (centre, tip_from, tip_to, strength, flat)
 
 
 def sabre_points(hand: Pt, deg: float, length: float, curve: float) -> tuple[Pt, list[Pt], Pt, Pt]:
@@ -1132,20 +1132,24 @@ SMEAR_CAP = 0.12           # the last 12 % of the sweep rounds the head off onto
 
 def paint_smear(cv: Canvas, wd: WeaponDraw) -> None:
     """Slash smear = the band swept by the outer blade along the tip's path
-    (tail -> this frame's tip, around the shoulder). Outer edge = the tip
-    path; thickness follows a comet profile (SotN-era smears): 1 px at the
-    tail, growing toward the blade, widest where the blade is now, the head
-    rounded off over the last SMEAR_CAP of the sweep and still >= 3 px where it
-    meets the outer blade, so the arc and the strike read as one shape instead
-    of a banana floating above it. Strike: S5 rim, S4 body, S3 inner;
-    follow-through one step dimmer and narrower; hold a thin S3/S2 tail."""
+    (tail -> this frame's tip, round the swing's centre). The path is an
+    ellipse `flat` times as tall as it is wide (1: a circle; < 1: a
+    horizontal cut seen from slightly above). Outer edge = the tip path;
+    thickness, measured in screen pixels, follows a comet profile (SotN-era
+    smears): 1 px at the tail, growing toward the blade, widest where the
+    blade is now, the head rounded off over the last SMEAR_CAP of the sweep and
+    still >= 3 px where it meets the outer blade, so the arc and the strike
+    read as one shape instead of a banana floating beside it. Strike: S5 rim,
+    S4 body, S3 inner; follow-through one step dimmer and narrower; hold a
+    thin S3/S2 tail."""
     if wd.smear is None:
         return
-    piv, tip0, tip1, strength = wd.smear
+    piv, tip0, tip1, strength, k = wd.smear
     tier = next(t for t in SMEAR_TIERS if strength >= t[0])
     _, t_max, rim_t, body_t, inner_t, sweep, gap, crescent = tier
-    a0 = math.atan2(tip0[1] - piv[1], tip0[0] - piv[0])
-    a1 = math.atan2(tip1[1] - piv[1], tip1[0] - piv[0])
+    # unsquash the vertical axis: the path is a circle of the (u, v) plane
+    a0 = math.atan2((tip0[1] - piv[1]) / k, tip0[0] - piv[0])
+    a1 = math.atan2((tip1[1] - piv[1]) / k, tip1[0] - piv[0])
     da = (a1 - a0 + math.pi) % (2 * math.pi) - math.pi
     if abs(da) < 1e-3:
         return
@@ -1153,10 +1157,12 @@ def paint_smear(cv: Canvas, wd: WeaponDraw) -> None:
     if abs(da) > max_sweep:
         a0 = a1 - math.copysign(max_sweep, da)
         da = a1 - a0
-    r0 = math.hypot(tip0[0] - piv[0], tip0[1] - piv[1])
-    r1 = math.hypot(tip1[0] - piv[0], tip1[1] - piv[1])
-    ang = np.arctan2(YY - piv[1], XX - piv[0])
-    rad = np.hypot(XX - piv[0], YY - piv[1])
+    r0 = math.hypot(tip0[0] - piv[0], (tip0[1] - piv[1]) / k)
+    r1 = math.hypot(tip1[0] - piv[0], (tip1[1] - piv[1]) / k)
+    u, v = XX - piv[0], (YY - piv[1]) / k
+    ang = np.arctan2(v, u)
+    rad = np.hypot(u, v)
+    grad = np.maximum(np.hypot(u, v / k), 1e-3) / np.maximum(rad, 1e-3)   # |d rad| per screen px
     f = ((ang - a0 + math.pi) % (2 * math.pi) - math.pi) / da     # 0 at the tail .. 1 at the blade
     lead = 1.0 - (math.radians(gap) + 1.0 / max(r1, 1.0)) / abs(da)
     g = np.clip(f / max(lead, 1e-3), 0.0, 1.0)
@@ -1169,9 +1175,10 @@ def paint_smear(cv: Canvas, wd: WeaponDraw) -> None:
         thick = np.maximum(thick, np.where(g > 0.02, 1.0, 0.0))
     else:                                 # a tail: thickest where it meets the tip, fading back
         thick = t_max * np.clip(g, 0.0, 1.0) ** 0.7
-    band = (f >= 0) & (f <= lead) & (rad <= r_path + 0.5) & (rad >= r_path + 0.5 - thick) & (thick > 0.6)
-    depth = (r_path + 0.5 - rad) / np.maximum(thick, 1e-3)          # 0 at the tip path .. 1 at the inner edge
-    edge = rad > r_path - 0.6
+    dist = (r_path + 0.5 - rad) / grad                              # screen px inside the tip path
+    band = (f >= 0) & (f <= lead) & (dist >= 0) & (dist <= thick) & (thick > 0.6)
+    depth = dist / np.maximum(thick, 1e-3)                          # 0 at the tip path .. 1 at the inner edge
+    edge = dist < 1.1
     tone = np.where(depth > 0.6, inner_t, body_t)
     tone = np.where(edge & (g > 0.25), rim_t, tone)
     tone = np.where(g < 0.18, np.maximum(tone - 1, 2), tone)       # the tail fades out

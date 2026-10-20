@@ -22,7 +22,7 @@ from hero_paint import (
     WeaponDraw, addp, catmull, cloth_grid, composite_weapon, dilate4, paint_blob, paint_cloth,
     paint_hair_clump, paint_limb, poly_mask, pp_line, ray_exit, render_weapon, resample, rnd, sabre_tip, shift,
 )
-from hero_rig import Pose, Rig, SimFrame, anchors, foot_points, solve
+from hero_rig import SLASH_FLAT, Pose, Rig, SimFrame, anchors, foot_points, solve
 
 NU_CAPE, NS_CAPE = 44, 64
 
@@ -369,17 +369,23 @@ def weapon_of(r: Rig, prev_tip: Pt | None) -> tuple[WeaponDraw, Pt | None]:
     if p.weapon == "sabre":
         grip = addp(hand, (0.0, 0.0))
         wd = WeaponDraw("sabre", grip, p.blade, behind=p.blade_behind)
+        wd.length *= p.blade_len
+        wd.curve *= p.blade_len
         tip = sabre_tip(grip, p.blade, wd.length, wd.curve)
         if p.smear > 0 and prev_tip is not None:
-            piv = r.J["shN"]
+            # the cut is flat: the tip runs round an ellipse centred under the near shoulder
+            # on the blade line, from behind the body past the camera side (lower on screen)
+            # to the front, i.e. counter-clockwise on screen
+            k = SLASH_FLAT
+            piv = (r.J["shN"][0], hand[1])
             t0 = prev_tip
             if p.smear_sweep > 0:
                 # the arc's tail sits `smear_sweep` degrees back along the swing from this
-                # frame's tip, at the radius the previous tip had (the blade came from there)
-                a = math.atan2(tip[1] - piv[1], tip[0] - piv[0]) - math.radians(p.smear_sweep)
-                rad = math.hypot(prev_tip[0] - piv[0], prev_tip[1] - piv[1])
-                t0 = (piv[0] + rad * math.cos(a), piv[1] + rad * math.sin(a))
-            wd.smear = (piv, t0, tip, p.smear)
+                # frame's tip, on the path the tip runs now (the arm is already out)
+                a = math.atan2((tip[1] - piv[1]) / k, tip[0] - piv[0]) + math.radians(p.smear_sweep)
+                rad = math.hypot(tip[0] - piv[0], (tip[1] - piv[1]) / k)
+                t0 = (piv[0] + rad * math.cos(a), piv[1] + k * rad * math.sin(a))
+            wd.smear = (piv, t0, tip, p.smear, k)
         return wd, tip
     if p.weapon == "whip":
         return WeaponDraw("whip", hand, whip=list(p.whip), spark=p.spark), (p.whip[-1] if p.whip else None)

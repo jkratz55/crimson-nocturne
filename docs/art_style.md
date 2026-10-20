@@ -124,6 +124,11 @@ any existing character's costume.
 - The pale face is the bright focal point, with a red eye glint (255,64,72).
 - Weapons: a slim curved sabre with a gold cup hilt; the Crimson Lash is
   braided leather with a crimson glint on every third bead and a steel tip.
+- The sabre cuts **flat**: a horizontal swing at chest height, standing,
+  crouched and in the air, never an overhead chop. It is drawn back level
+  past the hip, swept round the camera side and held straight out. The
+  plane of the cut is seen from slightly above (`SLASH_FLAT`), so the smear
+  is a squashed ellipse under the blade.
 
 ## Animation
 

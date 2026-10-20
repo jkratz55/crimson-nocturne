@@ -45,6 +45,11 @@ ANKLE_UP = 3.4              # ankle above the sole
 STAND_Y = FLOOR_Y - ANKLE_UP   # flat-foot ankle height on the floor
 IK_STRETCH = 1.07
 
+# The sword cuts flat (a horizontal swing, as the genre's swordsmen do), and the
+# camera sees that plane from slightly above: a circle in it draws as an
+# ellipse this many times as tall as it is wide, its near (camera) side lower.
+SLASH_FLAT = 0.22
+
 RUN_SPEED = 105.0           # px/s, scripts/player/player.gd run_speed
 RUN_V = RUN_SPEED / 60.0    # 1.75 px per tick
 RUN_TICKS = [3, 2] * 8      # 16 frames, 40 ticks per cycle (= 70 px)
@@ -156,6 +161,7 @@ class Pose:
     far_arm_front: bool = False    # far arm drawn over the torso (throw, reach)
     weapon: str = "none"           # "none" | "sabre" | "whip"
     blade: float = 80.0            # sabre screen angle (0 forward, -90 up)
+    blade_len: float = 1.0         # drawn blade length (< 1: foreshortened toward / away from the camera)
     blade_behind: bool = False
     whip: tuple[Pt, ...] = ()
     spark: int = 0
@@ -195,6 +201,15 @@ def _lerp_any(x: Any, y: Any, t: float) -> Any:
 def keyed(keys: Sequence[tuple[Pose, Pose | None, float]]) -> list[Pose]:
     """[(pose_a, pose_b or None, t)] -> per-frame poses (a key or an in-between)."""
     return [lerp_pose(a, b, t) if b is not None else a for a, b, t in keys]
+
+
+def flat_blade(heading: float) -> dict[str, float]:
+    """Pose fields for a sabre held level and pointing `heading` degrees round
+    the flat cut (0 forward, 90 at the camera, 180 back, < 0 away): its screen
+    angle and foreshortened length under SLASH_FLAT."""
+    h = math.radians(heading)
+    c, s = math.cos(h), SLASH_FLAT * math.sin(h)
+    return {"blade": math.degrees(math.atan2(s, c)), "blade_len": math.hypot(c, s)}
 
 
 # --------------------------------------------------------------------------

@@ -36,8 +36,8 @@ from common import HERO_CENTER_X, HERO_FOOT_Y, HERO_FRAME_H, HERO_FRAME_W, SPRIT
 from hero_figure import Frame, render_frame
 from hero_paint import ClothArt, Pt, ToneMemory
 from hero_rig import (
-    CHAINS, RUN_CYCLE, RUN_TICKS, STAND_Y, Pose, Sim, SimFrame, anchors, keyed, lerp_pose, mirror_sim, rest_shape,
-    run_pose, simulate, solve,
+    CHAINS, RUN_CYCLE, RUN_TICKS, STAND_Y, Pose, Sim, SimFrame, anchors, flat_blade, keyed, lerp_pose, mirror_sim,
+    rest_shape, run_pose, simulate, solve,
 )
 
 FW, FH = HERO_FRAME_W, HERO_FRAME_H
@@ -223,41 +223,54 @@ def crouch_frames() -> list[Pose]:
 
 
 # --- sword ------------------------------------------------------------------
+# A flat, horizontal cut at chest height, the genre's sword swing (never an overhead
+# chop): the near arm draws the sabre back level past the hip, sweeps it round the
+# camera side and snaps it straight out in front, the blade level on the hitbox line,
+# holds it there, then recovers. The chest winds open toward the camera (near shoulder
+# back) and closes toward profile as the shoulder comes through.
 SW_READY = stand(lean=3.0, yaw=34.0, arm_over=True, weapon="sabre", blade=70.0, grip_n="grip",
                  hand_n=(62.5, 53.0))
-SW_ANTIC = stand(pelvis=(62.0, 52.2), lean=-7.0, yaw=-8.0, tilt=0.0, head="fwd", foot_n=(56.5, STAND_Y),
-                 foot_f=(71.0, STAND_Y), pitch_f=0.0, hand_n=(55.0, 33.5), elbow_n=-1.0, hand_f=(70.5, 46.5),
-                 grip_n="grip", grip_f="fist", arm_over=True, weapon="sabre", blade=-158.0, blade_behind=True,
-                 vel=(-0.6, 0.0), cape=ClothArt(flare=0.08))
-SW_STRIKE = stand(pelvis=(64.5, 52.6), lean=9.0, yaw=30.0, tilt=0.0, head="fwd", foot_n=(56.5, STAND_Y),
-                  foot_f=(73.5, STAND_Y), hand_n=(76.0, 38.5), elbow_n=1.0, hand_f=(61.5, 49.5), grip_n="grip",
-                  grip_f="fist", arm_over=True, weapon="sabre", blade=-40.0, smear=1.0, vel=(1.4, 0.0),
-                  cape=ClothArt(flare=0.16, wave=0.8))
+# f0 antic, held 2 ticks: weight on the back foot, chest open, the blade pointing behind
+SW_ANTIC = stand(pelvis=(62.5, 52.4), lean=-3.0, yaw=58.0, tilt=0.0, head="fwd", foot_n=(56.5, STAND_Y),
+                 foot_f=(71.0, STAND_Y), hand_n=(52.5, 45.0), elbow_n=1.0, hand_f=(70.0, 47.0), grip_n="grip",
+                 grip_f="fist", arm_over=True, weapon="sabre", **flat_blade(172.0), vel=(-0.6, 0.0),
+                 cape=ClothArt(flare=0.08))
+# the cut: front foot stepped out, chest closed so the near shoulder leads, the arm
+# straight out at chest height, the off hand pulled back to the hip
+SW_CUT = stand(pelvis=(65.0, 52.7), lean=8.0, yaw=18.0, tilt=0.0, head="fwd", foot_n=(56.5, STAND_Y),
+               foot_f=(74.0, STAND_Y), hand_n=(79.5, 42.0), elbow_n=1.0, hand_f=(59.0, 48.5), grip_n="grip",
+               grip_f="fist", arm_over=True, weapon="sabre", **flat_blade(0.0), vel=(1.4, 0.0),
+               cape=ClothArt(flare=0.16, wave=0.8))
 # Frame plan (ticks 2,1 | 2,3,4 | 2,1; hitbox live on f2-f4, chest height in front):
-# f0 antic held 2 ticks (torso turned away, blade cocked behind the body layer);
-# f1 the 1-tick passing drawing, blade raised up-forward over the head;
-# f2 impact: blade level inside the hitbox under a broad front-upper crescent that
-#    sweeps from straight above the shoulder down onto it (the hit-stop freezes this
-#    frame, so the held hit shows the blade on the target with its arc above);
-# f3 follow-through: blade a little below level, a second narrower crescent;
+# f0 antic (above);
+# f1 the 1-tick passing drawing: the hand leads round the camera side at the belt,
+#    the blade swinging forward past the camera (foreshortened, angled down);
+# f2 impact: arm and blade straight out, level inside the hitbox, under a broad flat
+#    swoosh that comes round the camera side onto the blade (the hit-stop freezes this
+#    frame, so the held hit shows the blade on the target with its sweep below it);
+# f3 follow-through: the blade a hair past level (turning away), a narrower swoosh;
 # f4 hold: a thin fading tail; f5-f6 recovery.
-SW_RAISE = replace(SW_STRIKE, pelvis=(64.0, 52.4), lean=6.0, hand_n=(72.0, 34.0), blade=-62.0, smear=0.0,
-                   vel=(1.0, 0.0))
-SW_HIT = replace(SW_STRIKE, pelvis=(64.8, 52.7), lean=10.0, hand_n=(78.5, 42.5), blade=0.0, smear=1.0,
-                 smear_sweep=92.0, vel=(1.4, 0.0))
-SW_FOLLOW = replace(SW_STRIKE, pelvis=(65.0, 52.8), lean=11.0, yaw=26.0, hand_n=(80.0, 43.5), blade=5.0,
-                    smear=0.75, smear_sweep=48.0, vel=(1.0, 0.0))
-SW_HOLD = replace(SW_FOLLOW, hand_n=(79.5, 44.5), blade=9.0, smear=0.3, smear_sweep=4.5, vel=(0.2, 0.0))
-SW_REC1 = replace(lerp_pose(SW_HOLD, SW_READY, 0.45), blade=38.0, smear=0.0, weapon="sabre", arm_over=True)
-SW_REC2 = replace(lerp_pose(SW_HOLD, SW_READY, 0.8), blade=62.0, smear=0.0, weapon="sabre", arm_over=True)
+SW_PASS = replace(lerp_pose(SW_ANTIC, SW_CUT, 0.5), hand_n=(70.0, 44.0), **flat_blade(60.0), smear=0.6,
+                  smear_sweep=45.0, vel=(1.0, 0.0))
+SW_HIT = replace(SW_CUT, smear=1.0, smear_sweep=100.0)
+SW_FOLLOW = replace(SW_CUT, pelvis=(65.2, 52.8), lean=9.0, yaw=16.0, hand_n=(80.5, 42.5), **flat_blade(-6.0),
+                    smear=0.75, smear_sweep=55.0, vel=(1.0, 0.0))
+SW_HOLD = replace(SW_FOLLOW, hand_n=(80.0, 43.0), **flat_blade(-8.0), smear=0.3, smear_sweep=14.0, vel=(0.2, 0.0))
+SW_REC1 = replace(lerp_pose(SW_HOLD, SW_READY, 0.45), blade=38.0, blade_len=1.0, smear=0.0, weapon="sabre",
+                  arm_over=True)
+SW_REC2 = replace(lerp_pose(SW_HOLD, SW_READY, 0.8), blade=62.0, blade_len=1.0, smear=0.0, weapon="sabre",
+                  arm_over=True)
 
 
 def sword_frames() -> list[Pose]:
-    return [SW_ANTIC, SW_RAISE, SW_HIT, SW_FOLLOW, SW_HOLD, SW_REC1, SW_REC2]
+    return [SW_ANTIC, SW_PASS, SW_HIT, SW_FOLLOW, SW_HOLD, SW_REC1, SW_REC2]
 
 
 # --- whip -------------------------------------------------------------------
-WH_BASE = replace(SW_STRIKE, weapon="whip", smear=0.0, grip_n="fist", blade=0.0)
+WH_BASE = stand(pelvis=(64.5, 52.6), lean=9.0, yaw=30.0, tilt=0.0, head="fwd", foot_n=(56.5, STAND_Y),
+                foot_f=(73.5, STAND_Y), hand_n=(76.0, 38.5), elbow_n=1.0, hand_f=(61.5, 49.5), grip_n="fist",
+                grip_f="fist", arm_over=True, weapon="whip", blade=0.0, vel=(1.4, 0.0),
+                cape=ClothArt(flare=0.16, wave=0.8))
 WHIP_KEYS: list[tuple[dict[str, object], tuple[Pt, ...], int]] = [
     (dict(pelvis=(62.5, 52.2), lean=-5.0, yaw=8.0, head="up", hand_n=(57.5, 35.5), elbow_n=-1.0, vel=(-0.4, 0.0)),
      ((52.0, 41.0), (46.0, 47.0), (42.0, 54.0), (40.5, 61.0)), 0),
@@ -293,7 +306,9 @@ def crouched(p: Pose) -> Pose:
                 knee_n=CROUCH.knee_n, kneel_n=True, crouch=1.0, hand_n=(p.hand_n[0] + 1.5, p.hand_n[1] + dy),
                 hand_f=(p.hand_f[0] + 1.5, p.hand_f[1] + dy),
                 whip=tuple((x + max(0.0, y + dy - 71.0) * 0.6, min(y + dy, 71.0)) for x, y in p.whip),
-                blade=min(p.blade, 16.0) if p.blade > 16.0 else p.blade,
+                # a blade hanging down-forward (the recovery) would cut into the floor; level or
+                # pointing back (the flat cut's antic and passing drawings) it clears
+                blade=min(p.blade, 16.0) if 16.0 < p.blade <= 90.0 else p.blade,
                 stiff={"cape0": 0.6, "cape1": 0.6})
     return q
 
@@ -746,6 +761,7 @@ def _weapon_entry(fr: Frame) -> dict[str, object]:
     e: dict[str, object] = {"hand": [round(fr.hand[0], 1), round(fr.hand[1], 1)], "weapon": wd.kind}
     if wd.kind == "sabre":
         e["angle"] = round(wd.angle, 1)
+        e["length"] = round(wd.length, 1)
         e["behind"] = wd.behind
     if fr.tip is not None:
         e["tip"] = [round(fr.tip[0], 1), round(fr.tip[1], 1)]

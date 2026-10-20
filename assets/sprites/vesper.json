@@ -361,93 +361,100 @@
       "weapon": [
         {
           "hand": [
-            55.0,
-            33.5
+            52.5,
+            45.0
           ],
           "weapon": "sabre",
-          "angle": -158.0,
-          "behind": true,
+          "angle": 178.2,
+          "length": 22.8,
+          "behind": false,
           "tip": [
-            31.2,
-            25.6
+            28.1,
+            47.3
           ]
         },
         {
           "hand": [
-            72.0,
-            34.0
+            70.0,
+            44.0
           ],
           "weapon": "sabre",
-          "angle": -62.0,
+          "angle": 20.9,
+          "length": 12.3,
           "behind": false,
           "tip": [
-            82.3,
-            11.2
-          ]
-        },
-        {
-          "hand": [
-            78.5,
-            42.5
-          ],
-          "weapon": "sabre",
-          "angle": 0.0,
-          "behind": false,
-          "tip": [
-            103.5,
-            40.9
-          ]
-        },
-        {
-          "hand": [
-            80.0,
-            43.5
-          ],
-          "weapon": "sabre",
-          "angle": 5.0,
-          "behind": false,
-          "tip": [
-            105.0,
-            44.1
+            83.4,
+            48.2
           ]
         },
         {
           "hand": [
             79.5,
-            44.5
+            42.0
           ],
           "weapon": "sabre",
-          "angle": 9.0,
+          "angle": 0.0,
+          "length": 23.0,
+          "behind": false,
+          "tip": [
+            104.5,
+            40.4
+          ]
+        },
+        {
+          "hand": [
+            80.5,
+            42.5
+          ],
+          "weapon": "sabre",
+          "angle": -1.3,
+          "length": 22.9,
+          "behind": false,
+          "tip": [
+            105.0,
+            40.4
+          ]
+        },
+        {
+          "hand": [
+            80.0,
+            43.0
+          ],
+          "weapon": "sabre",
+          "angle": -1.8,
+          "length": 22.8,
           "behind": false,
           "tip": [
             104.4,
-            46.8
+            40.7
           ]
         },
         {
           "hand": [
             72.0,
-            48.5
+            47.5
           ],
           "weapon": "sabre",
           "angle": 38.0,
+          "length": 23.0,
           "behind": false,
           "tip": [
             92.7,
-            62.6
+            61.6
           ]
         },
         {
           "hand": [
             66.0,
-            51.5
+            51.0
           ],
           "weapon": "sabre",
           "angle": 62.0,
+          "length": 23.0,
           "behind": false,
           "tip": [
             79.1,
-            72.8
+            72.3
           ]
         }
       ]
@@ -470,93 +477,100 @@
       "weapon": [
         {
           "hand": [
-            56.5,
-            46.5
+            54.0,
+            58.0
           ],
           "weapon": "sabre",
-          "angle": -158.0,
-          "behind": true,
-          "tip": [
-            32.7,
-            38.6
-          ]
-        },
-        {
-          "hand": [
-            73.5,
-            47.0
-          ],
-          "weapon": "sabre",
-          "angle": -62.0,
+          "angle": 178.2,
+          "length": 22.8,
           "behind": false,
           "tip": [
-            83.8,
-            24.2
+            29.6,
+            60.3
           ]
         },
         {
           "hand": [
-            79.0,
-            55.5
-          ],
-          "weapon": "sabre",
-          "angle": 0.0,
-          "behind": false,
-          "tip": [
-            104.0,
-            53.9
-          ]
-        },
-        {
-          "hand": [
-            79.5,
-            56.0
-          ],
-          "weapon": "sabre",
-          "angle": 5.0,
-          "behind": false,
-          "tip": [
-            104.5,
-            56.6
-          ]
-        },
-        {
-          "hand": [
-            79.5,
+            71.5,
             57.0
           ],
           "weapon": "sabre",
-          "angle": 9.0,
+          "angle": 16.0,
+          "length": 12.3,
           "behind": false,
           "tip": [
-            104.4,
-            59.3
+            85.2,
+            60.1
+          ]
+        },
+        {
+          "hand": [
+            80.0,
+            55.0
+          ],
+          "weapon": "sabre",
+          "angle": 0.0,
+          "length": 23.0,
+          "behind": false,
+          "tip": [
+            105.0,
+            53.4
+          ]
+        },
+        {
+          "hand": [
+            80.5,
+            55.5
+          ],
+          "weapon": "sabre",
+          "angle": -1.3,
+          "length": 22.9,
+          "behind": false,
+          "tip": [
+            105.0,
+            53.4
+          ]
+        },
+        {
+          "hand": [
+            80.5,
+            56.0
+          ],
+          "weapon": "sabre",
+          "angle": -1.8,
+          "length": 22.8,
+          "behind": false,
+          "tip": [
+            104.9,
+            53.7
           ]
         },
         {
           "hand": [
             73.5,
-            61.5
+            60.5
           ],
           "weapon": "sabre",
           "angle": 16.0,
+          "length": 23.0,
           "behind": false,
           "tip": [
             98.0,
-            66.9
+            65.9
           ]
         },
         {
           "hand": [
             67.5,
-            64.5
+            64.0
           ],
           "weapon": "sabre",
           "angle": 16.0,
+          "length": 23.0,
           "behind": false,
           "tip": [
             92.0,
-            69.9
+            69.4
           ]
         }
       ]
@@ -579,93 +593,100 @@
       "weapon": [
         {
           "hand": [
-            55.0,
-            30.5
+            52.5,
+            42.0
           ],
           "weapon": "sabre",
-          "angle": -158.0,
-          "behind": true,
+          "angle": 178.2,
+          "length": 22.8,
+          "behind": false,
           "tip": [
-            31.2,
-            22.6
+            28.1,
+            44.3
           ]
         },
         {
           "hand": [
-            72.0,
-            31.0
+            70.0,
+            41.0
           ],
           "weapon": "sabre",
-          "angle": -62.0,
+          "angle": 20.9,
+          "length": 12.3,
           "behind": false,
           "tip": [
-            82.3,
-            8.2
-          ]
-        },
-        {
-          "hand": [
-            78.5,
-            42.5
-          ],
-          "weapon": "sabre",
-          "angle": 0.0,
-          "behind": false,
-          "tip": [
-            103.5,
-            40.9
-          ]
-        },
-        {
-          "hand": [
-            80.0,
-            43.5
-          ],
-          "weapon": "sabre",
-          "angle": 5.0,
-          "behind": false,
-          "tip": [
-            105.0,
-            44.1
+            83.4,
+            45.2
           ]
         },
         {
           "hand": [
             79.5,
-            44.5
+            42.0
           ],
           "weapon": "sabre",
-          "angle": 9.0,
+          "angle": 0.0,
+          "length": 23.0,
+          "behind": false,
+          "tip": [
+            104.5,
+            40.4
+          ]
+        },
+        {
+          "hand": [
+            80.5,
+            42.5
+          ],
+          "weapon": "sabre",
+          "angle": -1.3,
+          "length": 22.9,
+          "behind": false,
+          "tip": [
+            105.0,
+            40.4
+          ]
+        },
+        {
+          "hand": [
+            80.0,
+            43.0
+          ],
+          "weapon": "sabre",
+          "angle": -1.8,
+          "length": 22.8,
           "behind": false,
           "tip": [
             104.4,
-            46.8
+            40.7
           ]
         },
         {
           "hand": [
             72.0,
-            46.5
+            45.5
           ],
           "weapon": "sabre",
           "angle": 38.0,
+          "length": 23.0,
           "behind": false,
           "tip": [
             92.7,
-            60.6
+            59.6
           ]
         },
         {
           "hand": [
             66.0,
-            48.5
+            48.0
           ],
           "weapon": "sabre",
           "angle": 62.0,
+          "length": 23.0,
           "behind": false,
           "tip": [
             79.1,
-            69.8
+            69.3
           ]
         }
       ]

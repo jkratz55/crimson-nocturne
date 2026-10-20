@@ -1,8 +1,23 @@
 # Godot 4
+# (*.import and *.uid files are NOT ignored: Godot 4 needs them committed)
 .godot/
 /android/
 *.translation
+*.tmp
 export.cfg
 export_credentials.cfg
+
 # Python asset pipeline caches
 __pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# IDEs and editors
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
