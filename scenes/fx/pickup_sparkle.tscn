@@ -1,0 +1,13 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/fx/one_shot_effect.gd" id="1_script"]
+[ext_resource type="SpriteFrames" path="res://resources/sprite_frames/pickup_sparkle_frames.tres" id="2_frames"]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_add"]
+blend_mode = 1
+
+[node name="PickupSparkle" type="AnimatedSprite2D"]
+z_index = 4
+material = SubResource("CanvasItemMaterial_add")
+sprite_frames = ExtResource("2_frames")
+script = ExtResource("1_script")

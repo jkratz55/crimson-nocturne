@@ -1,10 +1,26 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scripts/world/save_point.gd" id="1_script"]
 [ext_resource type="SpriteFrames" path="res://resources/sprite_frames/save_shrine_frames.tres" id="2_frames"]
+[ext_resource type="SpriteFrames" path="res://resources/sprite_frames/save_shrine_glow_frames.tres" id="3_glow"]
+[ext_resource type="Texture2D" path="res://assets/ui/notice_plate.png" id="4_notice"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_area"]
 size = Vector2(48, 44)
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_add"]
+blend_mode = 1
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_notice"]
+content_margin_left = 6.0
+content_margin_top = 4.0
+content_margin_right = 6.0
+content_margin_bottom = 2.0
+texture = ExtResource("4_notice")
+texture_margin_left = 4.0
+texture_margin_top = 4.0
+texture_margin_right = 4.0
+texture_margin_bottom = 4.0
 
 [node name="SavePoint" type="Node2D"]
 z_index = 1
@@ -15,7 +31,15 @@ respawn_offset = Vector2(0, 0)
 sprite_frames = ExtResource("2_frames")
 animation = &"idle"
 autoplay = "idle"
-offset = Vector2(0, -24)
+offset = Vector2(0, -34)
+
+[node name="Glow" type="AnimatedSprite2D" parent="."]
+material = SubResource("CanvasItemMaterial_add")
+position = Vector2(0, -39)
+sprite_frames = ExtResource("3_glow")
+autoplay = "default"
+centered = false
+offset = Vector2(-48, -192)
 
 [node name="Area" type="Area2D" parent="."]
 collision_layer = 0
@@ -27,10 +51,10 @@ position = Vector2(0, -20)
 shape = SubResource("RectangleShape2D_area")
 
 [node name="Prompt" type="Label" parent="."]
-offset_left = -40.0
-offset_top = -58.0
-offset_right = 40.0
-offset_bottom = -48.0
-theme_override_colors/font_color = Color(0.72, 0.87, 1, 1)
+offset_top = -84.0
+offset_bottom = -68.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0.94, 0.94, 0.97, 1)
+theme_override_styles/normal = SubResource("StyleBoxTexture_notice")
 text = "UP  SAVE"
 horizontal_alignment = 1

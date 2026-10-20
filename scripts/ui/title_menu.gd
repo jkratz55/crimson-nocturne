@@ -3,10 +3,20 @@ class_name TitleMenu
 extends Control
 
 const GAME_SCENE: String = "res://scenes/main.tscn"
+const COLOR_ROW: Color = Color(0.72, 0.70, 0.80)
+const COLOR_HIGHLIGHT: Color = Color(0.94, 0.78, 0.36)
+## The selected option's text over the selection bar (the theme's white).
+const COLOR_SELECTED: Color = Color(0.94, 0.94, 0.97)
+## The selection bar: 11 px tall like every menu's, starting 2 px above the
+## row so the caps on the row's top line sit centred on it.
+const BAR_HEIGHT: float = 11.0
+const BAR_LEAD: float = 2.0
 
 @onready var options: VBoxContainer = %Options
 @onready var message: Label = %Message
 @onready var hint: Label = %Hint
+## SotN-style pulsing bar behind the selected option (optional node).
+@onready var _bar: Control = get_node_or_null(^"%TitleBar") as Control
 
 var _row: int = 0
 var _choosing_slot: bool = false
@@ -18,6 +28,9 @@ func _ready() -> void:
 	GameManager.set_process(false)
 	GameFeel.clear_hit_stop()
 	Controls.device_changed.connect(_on_device_changed)
+	# The rows are rebuilt on every move; place the bar once they are laid out.
+	options.sort_children.connect(_place_bar)
+	_show_message("")
 	_refresh()
 
 
@@ -42,7 +55,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _confirm() -> void:
-	message.text = ""
+	_show_message("")
 	if _choosing_slot:
 		if _row == SaveManager.SLOT_COUNT:
 			_choosing_slot = false
@@ -64,15 +77,15 @@ func _confirm() -> void:
 func _load_slot(slot: int) -> void:
 	var info: SaveManager.SlotInfo = SaveManager.get_slot_info(slot)
 	if not info.exists:
-		message.text = "NO READABLE SAVE IN THIS SLOT."
+		_show_message("NO READABLE SAVE IN THIS SLOT.")
 		return
 	# Only the Crimson Hall is shipped. Refuse unsupported rooms before
 	# changing the run; extend this routing when more room scenes are added.
 	if info.room != &"" and info.room != &"crimson_hall":
-		message.text = "THIS SAVE'S ROOM IS UNAVAILABLE."
+		_show_message("THIS SAVE'S ROOM IS UNAVAILABLE.")
 		return
 	if not SaveManager.load_from_slot(slot):
-		message.text = "THE SAVE COULD NOT BE LOADED."
+		_show_message("THE SAVE COULD NOT BE LOADED.")
 		return
 	_start_game()
 
@@ -86,7 +99,30 @@ func _start_game() -> void:
 	if get_tree().change_scene_to_file(GAME_SCENE) != OK:
 		_starting = false
 		GameManager.set_process(false)
-		message.text = "THE GAME COULD NOT BE OPENED."
+		_show_message("THE GAME COULD NOT BE OPENED.")
+
+
+## The status line sits on a notice plate sized to its text, shown only while
+## there is something to say (an empty plate would float over the spires).
+func _show_message(text: String) -> void:
+	message.text = text
+	message.visible = not text.is_empty()
+
+
+## Behind the selected row, after the VBox has laid the rows out (visual only).
+func _place_bar() -> void:
+	if _bar == null:
+		return
+	var rows: Array[Node] = options.get_children()
+	if _row >= rows.size():
+		_bar.visible = false
+		return
+	var row := rows[_row] as Control
+	_bar.visible = true
+	# One text line tall like every menu's bar, with the row's caps (its top
+	# 7 px) centred on it.
+	_bar.position.y = options.position.y + row.position.y - BAR_LEAD
+	_bar.size.y = BAR_HEIGHT
 
 
 func _refresh() -> void:
@@ -102,10 +138,16 @@ func _refresh() -> void:
 		rows.assign(["CONTINUE", "NEW GAME", "LOAD SLOT"])
 	for i: int in rows.size():
 		var label := Label.new()
-		label.text = ("> " if i == _row else "  ") + rows[i]
+		# With the selection bar marking the row, the text stays put (no "> "
+		# prefix) and turns white; without it, fall back to the old marker.
+		var selected: bool = i == _row
+		if _bar == null:
+			label.text = ("> " if selected else "  ") + rows[i]
+		else:
+			label.text = rows[i]
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		label.add_theme_color_override(&"font_color",
-			Color(0.94, 0.78, 0.36) if i == _row else Color(0.72, 0.70, 0.80))
+		var selected_color: Color = COLOR_SELECTED if _bar != null else COLOR_HIGHLIGHT
+		label.add_theme_color_override(&"font_color", selected_color if selected else COLOR_ROW)
 		options.add_child(label)
 	hint.text = "%s SELECT   %s CONFIRM   %s BACK" % [
 		Controls.get_action_label(&"move_down"),

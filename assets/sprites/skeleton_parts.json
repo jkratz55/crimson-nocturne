@@ -1,0 +1,255 @@
+{
+  "frame_size": [
+    24,
+    24
+  ],
+  "origin": [
+    12,
+    12
+  ],
+  "animations": {
+    "skull": {
+      "frames": 1,
+      "fps": 60.0,
+      "loop": false,
+      "row": 0,
+      "ticks": [
+        1
+      ],
+      "total_ticks": 1
+    },
+    "ribcage": {
+      "frames": 1,
+      "fps": 60.0,
+      "loop": false,
+      "row": 1,
+      "ticks": [
+        1
+      ],
+      "total_ticks": 1
+    },
+    "pelvis": {
+      "frames": 1,
+      "fps": 60.0,
+      "loop": false,
+      "row": 2,
+      "ticks": [
+        1
+      ],
+      "total_ticks": 1
+    },
+    "arm": {
+      "frames": 1,
+      "fps": 60.0,
+      "loop": false,
+      "row": 3,
+      "ticks": [
+        1
+      ],
+      "total_ticks": 1
+    },
+    "leg_a": {
+      "frames": 1,
+      "fps": 60.0,
+      "loop": false,
+      "row": 4,
+      "ticks": [
+        1
+      ],
+      "total_ticks": 1
+    },
+    "leg_b": {
+      "frames": 1,
+      "fps": 60.0,
+      "loop": false,
+      "row": 5,
+      "ticks": [
+        1
+      ],
+      "total_ticks": 1
+    }
+  },
+  "parts": {
+    "skull": {
+      "attach": [
+        5,
+        -37
+      ],
+      "centre": [
+        5,
+        -35
+      ],
+      "pivot": [
+        12,
+        12
+      ],
+      "rect": [
+        6,
+        8,
+        12,
+        12
+      ],
+      "velocity": [
+        0.75,
+        -5.0
+      ],
+      "velocity_px_s": [
+        45.0,
+        -300.0
+      ],
+      "spin_deg_per_tick": 22.5,
+      "pop_ticks": 48
+    },
+    "ribcage": {
+      "attach": [
+        1,
+        -31
+      ],
+      "centre": [
+        1,
+        -29
+      ],
+      "pivot": [
+        12,
+        12
+      ],
+      "rect": [
+        7,
+        9,
+        11,
+        11
+      ],
+      "velocity": [
+        1.75,
+        -3.0
+      ],
+      "velocity_px_s": [
+        105.0,
+        -180.0
+      ],
+      "spin_deg_per_tick": 11.25,
+      "pop_ticks": 32
+    },
+    "pelvis": {
+      "attach": [
+        -1,
+        -22
+      ],
+      "centre": [
+        -1,
+        -21
+      ],
+      "pivot": [
+        12,
+        12
+      ],
+      "rect": [
+        8,
+        9,
+        9,
+        9
+      ],
+      "velocity": [
+        1.5,
+        -2.0
+      ],
+      "velocity_px_s": [
+        90.0,
+        -120.0
+      ],
+      "spin_deg_per_tick": 6.3,
+      "pop_ticks": 20
+    },
+    "arm": {
+      "attach": [
+        5,
+        -23
+      ],
+      "centre": [
+        5,
+        -21
+      ],
+      "pivot": [
+        12,
+        12
+      ],
+      "rect": [
+        8,
+        4,
+        8,
+        20
+      ],
+      "velocity": [
+        1.0,
+        -3.0
+      ],
+      "velocity_px_s": [
+        60.0,
+        -180.0
+      ],
+      "spin_deg_per_tick": 2.8,
+      "pop_ticks": 12
+    },
+    "leg_a": {
+      "attach": [
+        3,
+        -11
+      ],
+      "centre": [
+        3,
+        -11
+      ],
+      "pivot": [
+        12,
+        12
+      ],
+      "rect": [
+        7,
+        2,
+        10,
+        21
+      ],
+      "velocity": [
+        2.0,
+        -4.0
+      ],
+      "velocity_px_s": [
+        120.0,
+        -240.0
+      ],
+      "spin_deg_per_tick": 5.6,
+      "pop_ticks": 24
+    },
+    "leg_b": {
+      "attach": [
+        -1,
+        -11
+      ],
+      "centre": [
+        -1,
+        -11
+      ],
+      "pivot": [
+        12,
+        12
+      ],
+      "rect": [
+        8,
+        2,
+        8,
+        21
+      ],
+      "velocity": [
+        1.75,
+        -0.875
+      ],
+      "velocity_px_s": [
+        105.0,
+        -52.5
+      ],
+      "spin_deg_per_tick": 1.4,
+      "pop_ticks": 16
+    }
+  },
+  "notes": "attach = spawn and spin pivot relative to the skeleton feet origin (world px, facing right; mirror x when facing left) = skeleton.gd PART_ATTACH; it is the cell centre, so a part spawned there covers the pixels the skeleton drew. centre = the part's own bbox centre. velocity is px per 60 Hz tick, +x away from the hit. Each part bursts into a small fire puff after pop_ticks."
+}

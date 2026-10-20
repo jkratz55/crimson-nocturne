@@ -1,9 +1,12 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/pause_menu.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://assets/ui/menu_frame.png" id="2_frame"]
+[ext_resource type="Texture2D" path="res://assets/ui/window_tabs.png" id="2_tabs"]
 [ext_resource type="Texture2D" path="res://assets/ui/cursor.png" id="3_cursor"]
 [ext_resource type="Texture2D" path="res://assets/ui/marker_equipped.png" id="4_marker"]
+[ext_resource type="Texture2D" path="res://assets/ui/window_main.png" id="5_main"]
+[ext_resource type="Texture2D" path="res://assets/ui/window_info.png" id="6_info"]
+[ext_resource type="Script" path="res://scripts/ui/selection_bar.gd" id="90_selection_bar"]
 
 [node name="PauseMenu" type="CanvasLayer"]
 process_mode = 3
@@ -30,48 +33,52 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-color = Color(0.02, 0.015, 0.045, 0.8)
+color = Color(0.016, 0.012, 0.04, 0.86)
+
+[node name="TabsWindow" type="NinePatchRect" parent="Root"]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 4.0
+offset_right = 364.0
+offset_bottom = 22.0
+mouse_filter = 2
+texture = ExtResource("2_tabs")
+patch_margin_left = 6
+patch_margin_top = 6
+patch_margin_right = 6
+patch_margin_bottom = 6
+
+[node name="TabBar" type="HBoxContainer" parent="Root/TabsWindow"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 12.0
+offset_top = 4.0
+offset_right = 332.0
+offset_bottom = 14.0
+mouse_filter = 2
+theme_override_constants/separation = 18
+alignment = 1
 
 [node name="Panel" type="NinePatchRect" parent="Root"]
 layout_mode = 0
 offset_left = 20.0
-offset_top = 10.0
+offset_top = 24.0
 offset_right = 364.0
-offset_bottom = 206.0
+offset_bottom = 132.0
 mouse_filter = 2
-texture = ExtResource("2_frame")
-patch_margin_left = 14
-patch_margin_top = 14
-patch_margin_right = 14
-patch_margin_bottom = 14
-
-[node name="TabBar" type="HBoxContainer" parent="Root/Panel"]
-unique_name_in_owner = true
-layout_mode = 0
-offset_left = 12.0
-offset_top = 7.0
-offset_right = 332.0
-offset_bottom = 17.0
-mouse_filter = 2
-theme_override_constants/separation = 14
-alignment = 1
-
-[node name="Rule" type="ColorRect" parent="Root/Panel"]
-layout_mode = 0
-offset_left = 12.0
-offset_top = 21.0
-offset_right = 332.0
-offset_bottom = 22.0
-mouse_filter = 2
-color = Color(0.59, 0.41, 0.16, 1)
+texture = ExtResource("5_main")
+patch_margin_left = 6
+patch_margin_top = 6
+patch_margin_right = 6
+patch_margin_bottom = 6
 
 [node name="Equipment" type="Control" parent="Root/Panel"]
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 12.0
-offset_top = 24.0
+offset_top = 4.0
 offset_right = 332.0
-offset_bottom = 124.0
+offset_bottom = 104.0
 mouse_filter = 2
 
 [node name="SlotHeader" type="Label" parent="Root/Panel/Equipment"]
@@ -79,7 +86,7 @@ unique_name_in_owner = true
 layout_mode = 0
 offset_right = 166.0
 offset_bottom = 10.0
-theme_override_colors/font_color = Color(0.94, 0.78, 0.36, 1)
+theme_override_colors/font_color = Color(0.91, 0.77, 0.43, 1)
 text = "EQUIPPED"
 
 [node name="ItemHeader" type="Label" parent="Root/Panel/Equipment"]
@@ -90,6 +97,30 @@ offset_right = 320.0
 offset_bottom = 10.0
 theme_override_colors/font_color = Color(0.45, 0.43, 0.55, 1)
 text = "CARRIED"
+
+[node name="SlotBar" type="ColorRect" parent="Root/Panel/Equipment"]
+script = ExtResource("90_selection_bar")
+unique_name_in_owner = true
+visible = false
+layout_mode = 0
+offset_left = -2.0
+offset_top = 12.0
+offset_right = 166.0
+offset_bottom = 23.0
+mouse_filter = 2
+color = Color(0.25, 0.016, 0.055, 1)
+
+[node name="ItemBar" type="ColorRect" parent="Root/Panel/Equipment"]
+script = ExtResource("90_selection_bar")
+unique_name_in_owner = true
+visible = false
+layout_mode = 0
+offset_left = 172.0
+offset_top = 12.0
+offset_right = 320.0
+offset_bottom = 28.0
+mouse_filter = 2
+color = Color(0.25, 0.016, 0.055, 1)
 
 [node name="SlotList" type="VBoxContainer" parent="Root/Panel/Equipment"]
 unique_name_in_owner = true
@@ -118,22 +149,31 @@ size_flags_horizontal = 3
 mouse_filter = 2
 theme_override_constants/separation = 0
 
+[node name="Divider" type="ColorRect" parent="Root/Panel/Equipment"]
+layout_mode = 0
+offset_left = 169.0
+offset_top = 2.0
+offset_right = 170.0
+offset_bottom = 98.0
+mouse_filter = 2
+color = Color(0.32, 0.33, 0.5, 0.7)
+
 [node name="Stats" type="Control" parent="Root/Panel"]
 unique_name_in_owner = true
 visible = false
 layout_mode = 0
 offset_left = 12.0
-offset_top = 24.0
+offset_top = 4.0
 offset_right = 332.0
-offset_bottom = 124.0
+offset_bottom = 104.0
 mouse_filter = 2
 
 [node name="StatsLeft" type="VBoxContainer" parent="Root/Panel/Stats"]
 unique_name_in_owner = true
 layout_mode = 0
-offset_top = 4.0
-offset_right = 158.0
-offset_bottom = 96.0
+offset_top = 2.0
+offset_right = 154.0
+offset_bottom = 98.0
 mouse_filter = 2
 theme_override_constants/separation = 2
 
@@ -141,20 +181,29 @@ theme_override_constants/separation = 2
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 166.0
-offset_top = 4.0
+offset_top = 2.0
 offset_right = 320.0
-offset_bottom = 96.0
+offset_bottom = 98.0
 mouse_filter = 2
 theme_override_constants/separation = 2
+
+[node name="Divider" type="ColorRect" parent="Root/Panel/Stats"]
+layout_mode = 0
+offset_left = 160.0
+offset_top = 2.0
+offset_right = 161.0
+offset_bottom = 98.0
+mouse_filter = 2
+color = Color(0.32, 0.33, 0.5, 0.7)
 
 [node name="Map" type="Control" parent="Root/Panel"]
 unique_name_in_owner = true
 visible = false
 layout_mode = 0
 offset_left = 12.0
-offset_top = 24.0
+offset_top = 4.0
 offset_right = 332.0
-offset_bottom = 124.0
+offset_bottom = 104.0
 mouse_filter = 2
 
 [node name="MapBody" type="Label" parent="Root/Panel/Map"]
@@ -172,10 +221,22 @@ unique_name_in_owner = true
 visible = false
 layout_mode = 0
 offset_left = 12.0
-offset_top = 24.0
+offset_top = 4.0
 offset_right = 332.0
-offset_bottom = 124.0
+offset_bottom = 104.0
 mouse_filter = 2
+
+[node name="SystemBar" type="ColorRect" parent="Root/Panel/System"]
+script = ExtResource("90_selection_bar")
+unique_name_in_owner = true
+visible = false
+layout_mode = 0
+offset_left = -2.0
+offset_top = 4.0
+offset_right = 320.0
+offset_bottom = 16.0
+mouse_filter = 2
+color = Color(0.25, 0.016, 0.055, 1)
 
 [node name="SystemList" type="VBoxContainer" parent="Root/Panel/System"]
 unique_name_in_owner = true
@@ -186,58 +247,58 @@ offset_bottom = 96.0
 mouse_filter = 2
 theme_override_constants/separation = 2
 
-[node name="InfoBox" type="NinePatchRect" parent="Root/Panel"]
+[node name="InfoBox" type="NinePatchRect" parent="Root"]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 10.0
-offset_top = 126.0
-offset_right = 334.0
-offset_bottom = 180.0
+offset_left = 20.0
+offset_top = 134.0
+offset_right = 364.0
+offset_bottom = 190.0
 mouse_filter = 2
-texture = ExtResource("2_frame")
-patch_margin_left = 14
-patch_margin_top = 14
-patch_margin_right = 14
-patch_margin_bottom = 14
+texture = ExtResource("6_info")
+patch_margin_left = 6
+patch_margin_top = 6
+patch_margin_right = 6
+patch_margin_bottom = 6
 
-[node name="InfoName" type="Label" parent="Root/Panel/InfoBox"]
+[node name="InfoName" type="Label" parent="Root/InfoBox"]
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 10.0
-offset_top = 7.0
-offset_right = 314.0
-offset_bottom = 17.0
-theme_override_colors/font_color = Color(0.94, 0.78, 0.36, 1)
+offset_top = 6.0
+offset_right = 334.0
+offset_bottom = 16.0
+theme_override_colors/font_color = Color(0.91, 0.77, 0.43, 1)
 text = "SHORT SWORD"
 
-[node name="InfoDescription" type="Label" parent="Root/Panel/InfoBox"]
+[node name="InfoDescription" type="Label" parent="Root/InfoBox"]
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 10.0
 offset_top = 18.0
-offset_right = 314.0
+offset_right = 334.0
 offset_bottom = 39.0
-theme_override_colors/font_color = Color(0.72, 0.7, 0.8, 1)
+theme_override_colors/font_color = Color(0.86, 0.86, 0.93, 1)
 text = "A dhampir's blade, balanced and swift."
 autowrap_mode = 3
 clip_text = true
 
-[node name="InfoStats" type="Label" parent="Root/Panel/InfoBox"]
+[node name="InfoStats" type="Label" parent="Root/InfoBox"]
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 10.0
-offset_top = 40.0
-offset_right = 314.0
-offset_bottom = 50.0
-theme_override_colors/font_color = Color(0.86, 0.86, 0.94, 1)
+offset_top = 41.0
+offset_right = 334.0
+offset_bottom = 51.0
+theme_override_colors/font_color = Color(0.94, 0.94, 0.97, 1)
 text = "DAMAGE 10    REACH 39"
 
 [node name="Hint" type="Label" parent="Root/Panel"]
 unique_name_in_owner = true
 layout_mode = 0
-offset_top = 182.0
+offset_top = 172.0
 offset_right = 344.0
-offset_bottom = 192.0
-theme_override_colors/font_color = Color(0.5, 0.48, 0.6, 1)
+offset_bottom = 182.0
+theme_override_colors/font_color = Color(0.56, 0.56, 0.7, 1)
 text = "MOVE   EQUIP   CLOSE"
 horizontal_alignment = 1

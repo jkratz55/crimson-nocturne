@@ -1,0 +1,42 @@
+{
+  "frame_size": [
+    32,
+    32
+  ],
+  "origin": [
+    16,
+    16
+  ],
+  "animations": {
+    "aura": {
+      "frames": 8,
+      "fps": 60.0,
+      "loop": true,
+      "row": 0,
+      "ticks": [
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8
+      ],
+      "total_ticks": 64
+    },
+    "glint": {
+      "frames": 4,
+      "fps": 60.0,
+      "loop": true,
+      "row": 1,
+      "ticks": [
+        44,
+        2,
+        3,
+        3
+      ],
+      "total_ticks": 52
+    }
+  }
+}

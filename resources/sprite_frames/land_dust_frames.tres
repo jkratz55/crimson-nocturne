@@ -1,0 +1,46 @@
+[gd_resource type="SpriteFrames" format=3 uid="uid://be15x170ohqxy"]
+
+[ext_resource type="Texture2D" uid="uid://bdgoab6mutkm8" path="res://assets/sprites/land_dust.png" id="1_sheet"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_r0c0"]
+atlas = ExtResource("1_sheet")
+region = Rect2(0, 0, 48, 12)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_r0c1"]
+atlas = ExtResource("1_sheet")
+region = Rect2(48, 0, 48, 12)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_r0c2"]
+atlas = ExtResource("1_sheet")
+region = Rect2(96, 0, 48, 12)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_r0c3"]
+atlas = ExtResource("1_sheet")
+region = Rect2(144, 0, 48, 12)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_r0c4"]
+atlas = ExtResource("1_sheet")
+region = Rect2(192, 0, 48, 12)
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 3.0,
+"texture": SubResource("AtlasTexture_r0c0")
+}, {
+"duration": 3.0,
+"texture": SubResource("AtlasTexture_r0c1")
+}, {
+"duration": 4.0,
+"texture": SubResource("AtlasTexture_r0c2")
+}, {
+"duration": 4.0,
+"texture": SubResource("AtlasTexture_r0c3")
+}, {
+"duration": 5.0,
+"texture": SubResource("AtlasTexture_r0c4")
+}],
+"loop": 0,
+"name": &"default",
+"speed": 60.0
+}]

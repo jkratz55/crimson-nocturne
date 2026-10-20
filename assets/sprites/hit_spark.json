@@ -1,14 +1,57 @@
 {
   "frame_size": [
-    24,
-    24
+    32,
+    32
+  ],
+  "origin": [
+    16,
+    16
   ],
   "animations": {
     "default": {
-      "frames": 4,
-      "fps": 24,
+      "frames": 6,
+      "fps": 60.0,
       "loop": false,
-      "row": 0
+      "row": 0,
+      "ticks": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        3
+      ],
+      "total_ticks": 13
+    },
+    "slash": {
+      "frames": 6,
+      "fps": 60.0,
+      "loop": false,
+      "row": 1,
+      "ticks": [
+        1,
+        2,
+        2,
+        2,
+        2,
+        3
+      ],
+      "total_ticks": 12
+    },
+    "burst": {
+      "frames": 6,
+      "fps": 60.0,
+      "loop": false,
+      "row": 2,
+      "ticks": [
+        2,
+        2,
+        2,
+        2,
+        3,
+        3
+      ],
+      "total_ticks": 14
     }
   }
 }

@@ -10,7 +10,9 @@
 ## whatever is drawing UI answers.
 ##
 ## Scene contract: an [Area2D] root (this script) with a [CollisionShape2D],
-## an [AnimatedSprite2D] named `Sprite` and a [Label] named `Prompt`.
+## an [AnimatedSprite2D] named `Sprite` and a [Label] named `Prompt`. An
+## optional additive [AnimatedSprite2D] named `Glow` loops "default" and, after
+## a save made at this shrine, plays "activate" (the light column) once.
 class_name SavePoint
 extends Node2D
 
@@ -21,6 +23,8 @@ extends Node2D
 
 @onready var area: Area2D = $Area
 @onready var prompt: Label = $Prompt
+@onready var sprite: AnimatedSprite2D = get_node_or_null(^"Sprite") as AnimatedSprite2D
+@onready var glow: AnimatedSprite2D = get_node_or_null(^"Glow") as AnimatedSprite2D
 
 var _player: Player
 
@@ -31,6 +35,9 @@ func _ready() -> void:
 	area.body_entered.connect(_on_body_entered)
 	area.body_exited.connect(_on_body_exited)
 	Controls.device_changed.connect(_on_device_changed)
+	Events.game_saved.connect(_on_game_saved)
+	if glow != null:
+		glow.animation_finished.connect(_on_glow_finished)
 	_refresh_prompt()
 
 
@@ -56,7 +63,7 @@ func _on_body_entered(body: Node2D) -> void:
 	if player == null:
 		return
 	_player = player
-	prompt.visible = true
+	prompt.visible = not _column_playing()
 
 
 func _on_body_exited(body: Node2D) -> void:
@@ -69,5 +76,33 @@ func _on_device_changed(_device: Controls.Device) -> void:
 	_refresh_prompt()
 
 
+## The prompt draws its own small window (a StyleBoxTexture), so it is shrunk
+## to its text and re-centred over the shrine whenever the text changes.
 func _refresh_prompt() -> void:
 	prompt.text = prompt_format % Controls.get_action_label(&"move_up")
+	prompt.reset_size()
+	prompt.position.x = -prompt.size.x * 0.5
+
+
+func _column_playing() -> bool:
+	return glow != null and glow.is_playing() and glow.animation == &"activate"
+
+
+## Visual only: the save-light column rises at the shrine the player used.
+func _on_game_saved(_slot: int) -> void:
+	if _player == null or glow == null or glow.sprite_frames == null \
+			or not glow.sprite_frames.has_animation(&"activate"):
+		return
+	prompt.visible = false
+	glow.play(&"activate")
+
+
+func _on_glow_finished() -> void:
+	if glow.animation != &"activate":
+		return
+	prompt.visible = _player != null
+	glow.play(&"default")
+	# Back in step with the crystal's pulse (both loops are 8 x 8 ticks).
+	if sprite != null and sprite.sprite_frames != null \
+			and sprite.sprite_frames.get_frame_count(sprite.animation) == glow.sprite_frames.get_frame_count(&"default"):
+		glow.set_frame_and_progress(sprite.frame, sprite.frame_progress)

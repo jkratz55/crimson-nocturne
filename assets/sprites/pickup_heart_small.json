@@ -1,0 +1,21 @@
+{
+  "frame_size": [
+    13,
+    12
+  ],
+  "animations": {
+    "idle": {
+      "frames": 4,
+      "fps": 60.0,
+      "loop": true,
+      "row": 0,
+      "ticks": [
+        40,
+        2,
+        3,
+        3
+      ],
+      "total_ticks": 48
+    }
+  }
+}

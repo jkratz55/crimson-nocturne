@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c584xc4w4dg7j"
-path="res://.godot/imported/heart_big.png-cc91f9f32151c18df1a71ecfed0be10b.ctex"
+uid="uid://6bhol607y56b"
+path="res://.godot/imported/save_shrine_glow.png-2c01eb08e573ab5252b194ee8d163cc0.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/heart_big.png"
-dest_files=["res://.godot/imported/heart_big.png-cc91f9f32151c18df1a71ecfed0be10b.ctex"]
+source_file="res://assets/sprites/save_shrine_glow.png"
+dest_files=["res://.godot/imported/save_shrine_glow.png-2c01eb08e573ab5252b194ee8d163cc0.ctex"]
 
 [params]
 

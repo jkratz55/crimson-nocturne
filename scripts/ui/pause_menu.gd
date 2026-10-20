@@ -32,8 +32,10 @@ const ITEMS: int = 1
 ## The equipment tab's rows: the seven real slots, plus a pseudo-slot at the
 ## end for consumables, which are used rather than worn.
 const CONSUMABLE_ROW: int = 7
+## Slot and stat labels are title case like the item names beside them; only
+## tabs, window headings and button hints stay in capitals.
 const SLOT_LABELS: PackedStringArray = [
-	"RIGHT HAND", "LEFT HAND", "SUB-WEAPON", "ARMOUR", "NECKLACE", "RING I", "RING II", "ITEMS",
+	"Right Hand", "Left Hand", "Sub-weapon", "Armour", "Necklace", "Ring I", "Ring II", "Items",
 ]
 
 ## Held-direction auto-repeat, in seconds (delay before the first repeat,
@@ -43,12 +45,27 @@ const REPEAT_INTERVAL: float = 0.09
 
 const SLOT_ROW_HEIGHT: float = 11.0
 const ITEM_ROW_HEIGHT: float = 16.0
+## A one-line selection bar is 11 px tall in every menu (docs/art_style.md,
+## UI windows) and sits so the 7-px caps are centred on it: 2 px of bar above
+## them, then the caps, then their shadow row and 1 px more. Slot rows put
+## their text on the row's top line; system rows centre a 10-px line in 12.
+const BAR_HEIGHT: float = 11.0
+const SLOT_BAR_NUDGE: float = -2.0
+const SYSTEM_BAR_NUDGE: float = -1.0
+## Live rows and labels.
 const COLOR_ITEM: Color = Color(0.72, 0.70, 0.80)
+## Headings (EQUIPPED, CARRIED, the open tab).
 const COLOR_HIGHLIGHT: Color = Color(0.94, 0.78, 0.36)
+## The selected row's text, drawn over the selection bar (the theme's white).
+const COLOR_SELECTED: Color = Color(0.94, 0.94, 0.97)
 ## Highlight of the column that doesn't have focus.
 const COLOR_INACTIVE: Color = Color(0.58, 0.50, 0.46)
+## Disabled: empty values ("-"), "- NONE CARRIED -", unfocused headings.
 const COLOR_EMPTY: Color = Color(0.45, 0.43, 0.55)
 const COLOR_GOOD: Color = Color(0.55, 0.85, 0.55)
+## The selection bar behind the column without focus, which keeps marking the
+## slot being changed, is drawn at this opacity.
+const INACTIVE_BAR_ALPHA: float = 0.45
 
 @export var cursor_texture: Texture2D
 @export var equipped_texture: Texture2D
@@ -73,6 +90,13 @@ const COLOR_GOOD: Color = Color(0.55, 0.85, 0.55)
 @onready var _info_description: Label = %InfoDescription
 @onready var _info_stats: Label = %InfoStats
 @onready var _hint: Label = %Hint
+## SotN-style pulsing bars behind the selected row (optional nodes).
+@onready var _slot_bar: Control = get_node_or_null(^"%SlotBar") as Control
+@onready var _item_bar: Control = get_node_or_null(^"%ItemBar") as Control
+@onready var _system_bar: Control = get_node_or_null(^"%SystemBar") as Control
+## Windows that unfold when the menu opens (visual only).
+@onready var _windows: Array[Control] = _find_windows([^"Root/TabsWindow", ^"Root/Panel", ^"Root/InfoBox"])
+var _unfold_tween: Tween
 
 var is_open: bool = false
 
@@ -166,6 +190,9 @@ func open() -> void:
 	is_open = true
 	visible = true
 	get_tree().paused = true
+	if _unfold_tween != null and _unfold_tween.is_valid():
+		_unfold_tween.kill()
+	_unfold_tween = MenuFx.unfold(self, _windows)
 	Audio.play_sfx(&"menu_select", 0.0, -3.0)
 	opened.emit()
 
@@ -176,9 +203,21 @@ func close() -> void:
 		return
 	is_open = false
 	visible = false
+	if _unfold_tween != null and _unfold_tween.is_valid():
+		_unfold_tween.kill()
+	MenuFx.reset(_windows)
 	get_tree().paused = false
 	Audio.play_sfx(&"menu_move", 0.0, -3.0)
 	closed.emit()
+
+
+func _find_windows(paths: Array[NodePath]) -> Array[Control]:
+	var found: Array[Control] = []
+	for path: NodePath in paths:
+		var window := get_node_or_null(path) as Control
+		if window != null:
+			found.append(window)
+	return found
 
 
 # ---------------------------------------------------------------------------
@@ -274,7 +313,7 @@ func _use_consumable(item: ConsumableData) -> void:
 	if item.heart_amount > 0:
 		GameManager.add_hearts(item.heart_amount)
 	Audio.play_sfx(item.use_sfx, 0.0)
-	Events.notice_posted.emit(item.display_name.to_upper())
+	Events.notice_posted.emit(item.display_name)
 
 
 # ---------------------------------------------------------------------------
@@ -301,7 +340,23 @@ func _refresh_equipment() -> void:
 		&"font_color", COLOR_HIGHLIGHT if _column == ITEMS else COLOR_EMPTY)
 	_item_header.text = "CARRIED" if _slot_row != CONSUMABLE_ROW else "PROVISIONS"
 	_scroll_to_item_row()
+	_place_equipment_bars()
 	_update_info()
+
+
+## Put the selection bars behind the focused rows (visual only). While the
+## carried column has focus, the slot bar stays behind the slot being changed
+## at half strength.
+func _place_equipment_bars() -> void:
+	if _slot_bar != null:
+		_slot_bar.visible = true
+		_slot_bar.modulate.a = 1.0 if _column == SLOTS else INACTIVE_BAR_ALPHA
+		_slot_bar.size.y = BAR_HEIGHT
+		_slot_bar.position.y = _slot_list.position.y + _slot_row * SLOT_ROW_HEIGHT + SLOT_BAR_NUDGE
+	if _item_bar != null:
+		_item_bar.visible = _column == ITEMS and not _candidates.is_empty()
+		_item_bar.position.y = _item_scroll.position.y + _item_row * ITEM_ROW_HEIGHT \
+			- float(_item_scroll.scroll_vertical)
 
 
 func _fill_slot_list() -> void:
@@ -311,13 +366,13 @@ func _fill_slot_list() -> void:
 		var value: String = "-"
 		if row == CONSUMABLE_ROW:
 			var carried: int = GameManager.held_consumables().size()
-			value = "%d KIND%s" % [carried, "" if carried == 1 else "S"]
+			value = "%d kind%s" % [carried, "" if carried == 1 else "s"]
 		elif equipped != null:
 			value = equipped.display_name
 		var selected: bool = row == _slot_row
 		var color: Color = COLOR_ITEM
 		if selected:
-			color = COLOR_HIGHLIGHT if _column == SLOTS else COLOR_INACTIVE
+			color = _selected_color(_column == SLOTS, _slot_bar)
 		elif equipped == null and row != CONSUMABLE_ROW:
 			color = COLOR_EMPTY
 		_slot_list.add_child(_make_slot_row(SLOT_LABELS[row], value, selected, color))
@@ -331,10 +386,12 @@ func _fill_item_list() -> void:
 	var equipped: ItemData = null if _slot_row == CONSUMABLE_ROW else GameManager.get_equipped(_slot_row)
 	for i: int in _candidates.size():
 		var item: ItemData = _candidates[i]
-		var selected: bool = i == _item_row
+		# Only the focused carried column shows a selection: before it has
+		# focus, the cursor row means nothing yet.
+		var selected: bool = i == _item_row and _column == ITEMS
 		var color: Color = COLOR_ITEM
 		if selected:
-			color = COLOR_HIGHLIGHT if _column == ITEMS else COLOR_INACTIVE
+			color = _selected_color(true, _item_bar)
 		elif item == null:
 			color = COLOR_EMPTY
 		var label: String = item.display_name if item != null else "- REMOVE -"
@@ -343,7 +400,7 @@ func _fill_item_list() -> void:
 			suffix = "x%d" % GameManager.count_of(item.id)
 		_item_list.add_child(_make_item_row(
 			label, item.icon if item != null else null, suffix,
-			selected and _column == ITEMS, item != null and item == equipped, color))
+			selected, item != null and item == equipped, color))
 
 
 ## Keep the highlighted row inside the scroll window.
@@ -359,28 +416,42 @@ func _scroll_to_item_row() -> void:
 		_item_scroll.scroll_vertical = int(top + ITEM_ROW_HEIGHT - view)
 
 
-## One line in the equipped column: "RING I        Ruby Ring".
+## Text colour of a selected row: white on the selection bar, or the old
+## gold / inactive pair when the scene has no bar for that list.
+func _selected_color(focused: bool, bar: Control) -> Color:
+	if bar != null:
+		return COLOR_SELECTED if focused else COLOR_ITEM
+	return COLOR_HIGHLIGHT if focused else COLOR_INACTIVE
+
+
+## The shard cursor at the start of a row. It always keeps its 7 px (plus the
+## row's separation), so moving the selection never reflows the text, but it
+## is only drawn when there is no selection bar to mark the row instead.
+func _make_cursor(selected: bool, bar: Control) -> TextureRect:
+	var cursor := TextureRect.new()
+	cursor.texture = cursor_texture
+	cursor.modulate.a = 1.0 if selected and bar == null else 0.0
+	cursor.custom_minimum_size = Vector2(7.0, 9.0)
+	cursor.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
+	cursor.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	return cursor
+
+
+## One line in the equipped column: "Ring I        Ruby Ring".
 func _make_slot_row(label: String, value: String, selected: bool, color: Color) -> Control:
 	var row := HBoxContainer.new()
 	row.custom_minimum_size = Vector2(0.0, SLOT_ROW_HEIGHT)
 	row.add_theme_constant_override(&"separation", 2)
-
-	var cursor := TextureRect.new()
-	cursor.texture = cursor_texture
-	cursor.visible = selected
-	cursor.custom_minimum_size = Vector2(7.0, 9.0)
-	cursor.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
-	cursor.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	row.add_child(cursor)
+	row.add_child(_make_cursor(selected, _slot_bar))
 
 	var name_label := Label.new()
 	name_label.text = label
 	name_label.custom_minimum_size = Vector2(66.0, 0.0)
-	name_label.add_theme_color_override(&"font_color", COLOR_EMPTY if not selected else color)
+	name_label.add_theme_color_override(&"font_color", color if selected else COLOR_ITEM)
 	row.add_child(name_label)
 
 	var value_label := Label.new()
-	value_label.text = value.to_upper()
+	value_label.text = value
 	value_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	value_label.clip_text = true
 	value_label.add_theme_color_override(&"font_color", color)
@@ -394,14 +465,7 @@ func _make_item_row(label: String, icon: Texture2D, suffix: String,
 	var row := HBoxContainer.new()
 	row.custom_minimum_size = Vector2(0.0, ITEM_ROW_HEIGHT)
 	row.add_theme_constant_override(&"separation", 3)
-
-	var cursor := TextureRect.new()
-	cursor.texture = cursor_texture
-	cursor.visible = selected
-	cursor.custom_minimum_size = Vector2(7.0, 9.0)
-	cursor.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
-	cursor.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	row.add_child(cursor)
+	row.add_child(_make_cursor(selected, _item_bar))
 
 	var icon_rect := TextureRect.new()
 	icon_rect.texture = icon
@@ -411,7 +475,7 @@ func _make_item_row(label: String, icon: Texture2D, suffix: String,
 	row.add_child(icon_rect)
 
 	var name_label := Label.new()
-	name_label.text = label.to_upper()
+	name_label.text = label
 	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	name_label.clip_text = true
@@ -442,24 +506,24 @@ func _refresh_stats() -> void:
 	var stats: PlayerStats = GameManager.stats
 	var to_next: int = stats.xp_to_next_level()
 	_fill_labels(_stats_left, [
-		["LEVEL", str(stats.level)],
-		["EXPERIENCE", str(stats.experience)],
-		["TO NEXT LEVEL", "MAX" if to_next <= 0 else str(to_next)],
+		["Level", str(stats.level)],
+		["Experience", str(stats.experience)],
+		["To Next Level", "Max" if to_next <= 0 else str(to_next)],
 		["", ""],
-		["HIT POINTS", "%d / %d" % [GameManager.current_hp, GameManager.get_max_hp()]],
-		["HEARTS", "%d / %d" % [GameManager.hearts, GameManager.max_hearts]],
-		["GOLD", str(GameManager.gold)],
-		["PLAY TIME", SaveManager.SlotInfo.format_play_time(GameManager.play_time)],
+		["Hit Points", "%d / %d" % [GameManager.current_hp, GameManager.get_max_hp()]],
+		["Hearts", "%d / %d" % [GameManager.hearts, GameManager.max_hearts]],
+		["Gold", str(GameManager.gold)],
+		["Play Time", SaveManager.SlotInfo.format_play_time(GameManager.play_time)],
 	])
 	_fill_labels(_stats_right, [
-		["STRENGTH", _stat_text("strength", GameManager.get_strength())],
-		["CONSTITUTION", _stat_text("constitution", GameManager.get_constitution())],
-		["DEFENSE", _stat_text("defense", GameManager.get_defense())],
-		["LUCK", _stat_text("luck", GameManager.get_luck())],
+		["Strength", _stat_text("strength", GameManager.get_strength())],
+		["Constitution", _stat_text("constitution", GameManager.get_constitution())],
+		["Defense", _stat_text("defense", GameManager.get_defense())],
+		["Luck", _stat_text("luck", GameManager.get_luck())],
 		["", ""],
-		["ATTACK", _attack_text()],
-		["RELICS", str(GameManager.unlocked_abilities.size())],
-		["ROOMS SEEN", str(GameManager.explored_rooms.size())],
+		["Attack", _attack_text()],
+		["Relics", str(GameManager.unlocked_abilities.size())],
+		["Rooms Seen", str(GameManager.explored_rooms.size())],
 	])
 	_info_name.text = "VESPER"
 	_info_description.text = "Base stats rise with each level.\nBracketed numbers are what your gear adds."
@@ -491,12 +555,12 @@ func _fill_labels(box: VBoxContainer, rows: Array) -> void:
 		var name_label := Label.new()
 		name_label.text = entry[0]
 		name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		name_label.add_theme_color_override(&"font_color", COLOR_EMPTY)
+		name_label.add_theme_color_override(&"font_color", COLOR_ITEM)
 		row.add_child(name_label)
 		var value_label := Label.new()
 		value_label.text = entry[1]
 		value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-		value_label.add_theme_color_override(&"font_color", COLOR_ITEM)
+		value_label.add_theme_color_override(&"font_color", COLOR_SELECTED)
 		row.add_child(value_label)
 		box.add_child(row)
 
@@ -510,11 +574,11 @@ func _fill_labels(box: VBoxContainer, rows: Array) -> void:
 func _refresh_map() -> void:
 	var rooms: Array[StringName] = GameManager.explored_rooms
 	if rooms.is_empty():
-		_map_body.text = "NO ROOMS CHARTED"
+		_map_body.text = "No rooms charted"
 	else:
 		var names := PackedStringArray()
 		for room: StringName in rooms:
-			names.append(String(room).replace("_", " ").to_upper())
+			names.append(String(room).capitalize())
 		_map_body.text = "\n".join(names)
 	_info_name.text = "CHART"
 	_info_description.text = "%d room(s) walked.\nSave rooms and boss chambers are marked once the castle opens up." % rooms.size()
@@ -554,12 +618,12 @@ func _build_system_rows() -> void:
 ## [label, current value as text, step function] for each settings row.
 func _system_settings() -> Array[Array]:
 	return [
-		["MUSIC", _volume_text(Audio.MUSIC_BUS)],
-		["SOUND", _volume_text(Audio.SFX_BUS)],
-		["SCREEN SHAKE", "ON" if GameFeel.screen_shake_enabled else "OFF"],
-		["HIT STOP", "ON" if GameFeel.hit_stop_enabled else "OFF"],
-		["RUMBLE", "ON" if Controls.rumble_enabled else "OFF"],
-		["BUTTON PROMPTS", _prompt_text()],
+		["Music", _volume_text(Audio.MUSIC_BUS)],
+		["Sound", _volume_text(Audio.SFX_BUS)],
+		["Screen Shake", "On" if GameFeel.screen_shake_enabled else "Off"],
+		["Hit Stop", "On" if GameFeel.hit_stop_enabled else "Off"],
+		["Rumble", "On" if Controls.rumble_enabled else "Off"],
+		["Button Prompts", _prompt_text()],
 	]
 
 
@@ -568,13 +632,21 @@ func _refresh_system() -> void:
 	for i: int in _system_list.get_child_count():
 		var row: Control = _system_list.get_child(i) as Control
 		var selected: bool = i == _system_row
-		(row.get_node(^"Cursor") as TextureRect).visible = selected
+		# Kept in the layout either way, so the row text never shifts; drawn
+		# only when there is no selection bar.
+		(row.get_node(^"Cursor") as TextureRect).modulate.a = 1.0 if selected and _system_bar == null else 0.0
+		var color: Color = _selected_color(true, _system_bar) if selected else COLOR_ITEM
 		var name_label := row.get_node(^"Name") as Label
 		name_label.text = settings[i][0]
-		name_label.add_theme_color_override(&"font_color", COLOR_HIGHLIGHT if selected else COLOR_ITEM)
+		name_label.add_theme_color_override(&"font_color", color)
 		var value_label := row.get_node(^"Value") as Label
 		value_label.text = settings[i][1]
-		value_label.add_theme_color_override(&"font_color", COLOR_HIGHLIGHT if selected else COLOR_ITEM)
+		value_label.add_theme_color_override(&"font_color", color)
+	if _system_bar != null:
+		var row_step: float = 12.0 + float(_system_list.get_theme_constant(&"separation"))
+		_system_bar.visible = true
+		_system_bar.size.y = BAR_HEIGHT
+		_system_bar.position.y = _system_list.position.y + _system_row * row_step + SYSTEM_BAR_NUDGE
 	_info_name.text = "SYSTEM"
 	_info_description.text = "Left and right change a setting.\nKey bindings live in Project Settings > Input Map for now."
 	_info_stats.text = ""
@@ -610,7 +682,7 @@ func _volume_notch(bus: StringName) -> int:
 
 func _volume_text(bus: StringName) -> String:
 	var notch: int = _volume_notch(bus)
-	return "OFF" if notch == 0 else ("|".repeat(notch) + "%d" % notch)
+	return "Off" if notch == 0 else ("|".repeat(notch) + "%d" % notch)
 
 
 func _step_volume(bus: StringName, step: int) -> void:
@@ -626,10 +698,10 @@ func _step_volume(bus: StringName, step: int) -> void:
 func _prompt_text() -> String:
 	match Controls.device:
 		Controls.Device.PLAYSTATION:
-			return "PLAYSTATION"
+			return "PlayStation"
 		Controls.Device.XBOX:
-			return "XBOX"
-	return "KEYBOARD"
+			return "Xbox"
+	return "Keyboard"
 
 
 ## Cycle auto-detect -> Xbox -> PlayStation -> auto-detect.
@@ -684,11 +756,11 @@ func _update_info() -> void:
 	elif _slot_row != CONSUMABLE_ROW:
 		item = GameManager.get_equipped(_slot_row)
 	if item == null:
-		_info_name.text = "NOTHING EQUIPPED" if _column == SLOTS else "REMOVE"
+		_info_name.text = "Nothing Equipped" if _column == SLOTS else "Remove"
 		_info_description.text = "" if _column == SLOTS else "Leave the slot empty."
 		_info_stats.text = ""
 		return
-	_info_name.text = item.display_name.to_upper()
+	_info_name.text = item.display_name
 	_info_description.text = item.description
 	_info_stats.text = _item_stats_text(item)
 

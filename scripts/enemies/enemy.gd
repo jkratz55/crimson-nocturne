@@ -5,6 +5,7 @@
 ## - gravity (optional, flyers turn it off)
 ## - taking hits: damage numbers, white flash, knockback + stun, hit-stop
 ## - death: the classic "burst into flames" effect, sound, loot drop
+##   (subclasses can replace the visuals in [method _spawn_death_visuals])
 ##
 ## Scene contract (children expected by this script):
 ## [codeblock]
@@ -20,6 +21,16 @@ extends CharacterBody2D
 
 ## Emitted right before the enemy is removed from the tree.
 signal defeated(enemy: Enemy)
+
+## SotN-style hit flash (the CLUT swap): solid white with the outlines kept,
+## then a crimson tint at 60%, then normal. See shaders/hit_flash.gdshader.
+const FLASH_WHITE: Color = Color(1.0, 1.0, 1.0)
+const FLASH_CRIMSON: Color = Color(0.769, 0.243, 0.259)
+const FLASH_WHITE_TICKS: float = 2.0
+const FLASH_CRIMSON_TICKS: float = 2.0
+## hit_flash.gdshader's flash_mode values.
+const FLASH_MODE_SOLID: int = 0
+const FLASH_MODE_TINT: int = 1
 
 @export var display_name: String = "Enemy"
 
@@ -60,6 +71,10 @@ signal defeated(enemy: Enemy)
 @export_group("Effects")
 @export var death_effect_scene: PackedScene
 @export var hit_effect_scene: PackedScene
+## Spark for the killing blow (a bigger burst); falls back to [member hit_effect_scene].
+@export var kill_effect_scene: PackedScene
+## Where this enemy's damage numbers appear, relative to its origin.
+@export var damage_number_offset: Vector2 = Vector2(0, -36)
 
 @onready var sprite: AnimatedSprite2D = $Sprite
 @onready var health: HealthComponent = $HealthComponent
@@ -74,6 +89,11 @@ var target: Player
 var _gravity: float = ProjectSettings.get_setting("physics/2d/default_gravity")
 var _stun_timer: float = 0.0
 var _flash_tween: Tween
+## Direction (-1 / 1) the last blow pushed us, 0 if never hit. Visual only:
+## death pieces fly this way.
+var _last_hit_dir: float = 0.0
+## Private generator for cosmetic jitter, so effects never shift gameplay rolls.
+var _fx_rng: RandomNumberGenerator = RandomNumberGenerator.new()
 
 
 func _ready() -> void:
@@ -85,6 +105,7 @@ func _ready() -> void:
 	hurtbox.hit_received.connect(_on_hit_received)
 	health.died.connect(_on_died)
 	target = get_tree().get_first_node_in_group(&"player") as Player
+	_fx_rng.randomize()
 	_set_facing(facing)
 
 
@@ -121,12 +142,17 @@ func _set_facing(dir: int) -> void:
 # Damage & death
 # ---------------------------------------------------------------------------
 func _on_hit_received(hitbox: Hitbox) -> void:
+	# Before take_damage: a killing blow runs _on_died() from inside it.
+	_last_hit_dir = hitbox.get_knockback_direction(global_position)
 	var dealt: int = health.take_damage(
 		Combat.compute_damage(hitbox.damage, hitbox.attack_power, health.defense))
-	Events.damage_dealt.emit(dealt, global_position + Vector2(0, -36), false)
+	Events.damage_dealt.emit(dealt, global_position + damage_number_offset, false)
 	Audio.play_sfx(&"hit", 0.1)
 	_flash()
-	_spawn_effect(hit_effect_scene, hitbox.global_position.lerp(global_position + Vector2(0, -16), 0.5))
+	var spark: PackedScene = kill_effect_scene if health.is_dead and kill_effect_scene != null \
+		else hit_effect_scene
+	var jitter := Vector2(_fx_rng.randf_range(-3.0, 3.0), _fx_rng.randf_range(-3.0, 3.0)).round()
+	_spawn_effect(spark, hitbox.get_strike_point().lerp(global_position + Vector2(0, -16), 0.5) + jitter)
 	if health.is_dead:
 		return
 	var dir: float = hitbox.get_knockback_direction(global_position)
@@ -145,12 +171,25 @@ func _on_died() -> void:
 	contact_hitbox.deactivate()
 	Audio.play_sfx(&"enemy_death")
 	GameFeel.hit_stop(0.08)
-	_spawn_effect(death_effect_scene, global_position)
+	_spawn_death_visuals()
 	_drop_loot()
 	GameManager.add_experience(experience)
 	Events.enemy_killed.emit(self)
 	defeated.emit(self)
 	queue_free()
+
+
+## What the death looks like. The default bursts into [member death_effect_scene];
+## subclasses override it (the skeleton breaks apart). Visual only: it runs
+## inside [method _on_died], which owns the loot, experience and signals.
+func _spawn_death_visuals() -> void:
+	_spawn_effect(death_effect_scene, global_position)
+
+
+## The way death pieces should fly: away from the last blow, or backwards
+## if the enemy died without being hit.
+func _death_push_direction() -> float:
+	return _last_hit_dir if _last_hit_dir != 0.0 else float(-facing)
 
 
 ## Roll the hearts and the gold independently, as the spec's drop tables do:
@@ -187,10 +226,19 @@ func _flash() -> void:
 		return
 	if _flash_tween and _flash_tween.is_valid():
 		_flash_tween.kill()
-	mat.set_shader_parameter(&"flash_amount", 1.0)
+	_set_flash(mat, FLASH_WHITE, 1.0, FLASH_MODE_SOLID)
+	# Game-time ticks: hit-stop holds the white frame, as in SotN.
 	_flash_tween = create_tween()
-	_flash_tween.tween_method(
-		func(v: float) -> void: mat.set_shader_parameter(&"flash_amount", v), 1.0, 0.0, 0.18)
+	_flash_tween.tween_interval(FLASH_WHITE_TICKS / 60.0)
+	_flash_tween.tween_callback(_set_flash.bind(mat, FLASH_CRIMSON, 0.6, FLASH_MODE_TINT))
+	_flash_tween.tween_interval(FLASH_CRIMSON_TICKS / 60.0)
+	_flash_tween.tween_callback(_set_flash.bind(mat, FLASH_WHITE, 0.0, FLASH_MODE_SOLID))
+
+
+func _set_flash(mat: ShaderMaterial, color: Color, amount: float, mode: int) -> void:
+	mat.set_shader_parameter(&"flash_color", color)
+	mat.set_shader_parameter(&"flash_amount", amount)
+	mat.set_shader_parameter(&"flash_mode", mode)
 
 
 ## Instance [param scene] into the room (our parent) at [param at].

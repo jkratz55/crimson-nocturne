@@ -1,14 +1,29 @@
 {
   "frame_size": [
-    16,
-    32
+    24,
+    40
+  ],
+  "origin": [
+    12,
+    39
   ],
   "animations": {
     "burn": {
-      "frames": 4,
-      "fps": 10,
+      "frames": 8,
+      "fps": 60.0,
       "loop": true,
-      "row": 0
+      "row": 0,
+      "ticks": [
+        8,
+        6,
+        8,
+        6,
+        3,
+        7,
+        6,
+        5
+      ],
+      "total_ticks": 49
     }
   }
 }

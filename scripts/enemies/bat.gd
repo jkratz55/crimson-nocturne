@@ -21,12 +21,31 @@ enum AIState { HANG, SWOOP }
 ## Vertical offset of the point the bat homes in on (the player's chest).
 @export var aim_offset: Vector2 = Vector2(0.0, -22.0)
 
+@export_group("Death")
+## Torn wing scraps that flutter down after the death puff (visual only).
+@export_range(0, 24) var wing_bits: int = 7
+## Membrane tones the scraps are drawn in: one dark tone from the bat sheet,
+## which reads as a silhouette on the mid-value dado, and three lighter ones
+## that read on the dark upper wall. Every other scrap carries a light strut.
+@export var wing_bit_colors: PackedColorArray = PackedColorArray([
+	Color8(56, 30, 64), Color8(118, 66, 112), Color8(122, 80, 128), Color8(150, 94, 134)])
+## The scraps' light edges, cool lavender so they part from the warm rose
+## dado as well as the dark ashlar: the strut row along the top of every other
+## scrap, and the hem down the side every scrap hangs from.
+@export var wing_bit_strut_color: Color = Color8(178, 176, 222)
+@export var wing_bit_edge_color: Color = Color8(196, 202, 240)
+## A couple of embers thrown off the fire pop with the scraps.
+@export_range(0, 8) var wing_bit_sparks: int = 2
+@export var wing_bit_spark_colors: PackedColorArray = PackedColorArray([
+	Color8(255, 190, 70), Color8(236, 118, 36)])
+
 var ai_state: AIState = AIState.HANG
 var _flight_time: float = 0.0
 
 
 func _ready() -> void:
 	super._ready()
+	sprite.animation_finished.connect(_on_animation_finished)
 	sprite.play(&"hang")
 
 
@@ -47,7 +66,11 @@ func _is_target_in_wake_range() -> bool:
 
 func _wake() -> void:
 	ai_state = AIState.SWOOP
-	sprite.play(&"fly")
+	# Visual only: drop off the roost with a short unfurl, then flap.
+	if sprite.sprite_frames.has_animation(&"unfurl"):
+		sprite.play(&"unfurl")
+	else:
+		sprite.play(&"fly")
 	Audio.play_sfx(&"bat_screech", 0.15)
 
 
@@ -68,3 +91,46 @@ func _swoop(delta: float) -> void:
 func _on_hurt(_hitbox: Hitbox) -> void:
 	if ai_state == AIState.HANG:
 		_wake()
+
+
+func _on_animation_finished() -> void:
+	if sprite.animation == &"unfurl":
+		sprite.play(&"fly")
+
+
+## Visual only: the death puff, then a few torn wing scraps drifting down.
+func _spawn_death_visuals() -> void:
+	super._spawn_death_visuals()
+	if wing_bits <= 0 or get_parent() == null:
+		return
+	# Warm, saturated tones in the palette are embers from the fire pop: they
+	# fly as 1x1 sparks that burn out fast, never as membrane scraps.
+	var membrane := PackedColorArray()
+	var embers := PackedColorArray(wing_bit_spark_colors)
+	for color: Color in wing_bit_colors:
+		if _is_ember(color):
+			embers.append(color)
+		else:
+			membrane.append(color)
+	if membrane.is_empty():
+		membrane.append(Color8(122, 80, 128))
+	var bits := DebrisBits.new()
+	bits.count = wing_bits
+	bits.colors = membrane
+	bits.shaped = true
+	bits.strut_color = wing_bit_strut_color
+	bits.edge_color = wing_bit_edge_color
+	# Slow, long-lived drift: the scraps hang in the air for the whole 0.8 s.
+	bits.max_fall_speed = 24.0
+	bits.life_spread = 0.2
+	bits.spark_count = wing_bit_sparks if not embers.is_empty() else 0
+	bits.spark_colors = embers
+	bits.spark_life = 0.3
+	bits.z_index = z_index
+	get_parent().add_child(bits)
+	bits.global_position = global_position.round()
+
+
+## True for a fire tone (hot red-orange-yellow) rather than a membrane tone.
+static func _is_ember(color: Color) -> bool:
+	return color.r > 0.7 and color.b < 0.35 and color.r - color.b > 0.5

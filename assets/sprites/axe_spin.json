@@ -1,0 +1,15 @@
+{
+  "frame_size": [
+    26,
+    26
+  ],
+  "hframes": 12,
+  "origin": [
+    13,
+    13
+  ],
+  "step_degrees": 30.0,
+  "direction": "clockwise",
+  "frame_selection": "round(abs(root rotation) / step) mod hframes; flip_h mirrors it for a left throw",
+  "driven_by": "res://scripts/projectiles/upright_spin_sprite.gd"
+}

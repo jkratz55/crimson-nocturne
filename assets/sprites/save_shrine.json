@@ -1,14 +1,29 @@
 {
   "frame_size": [
-    32,
-    48
+    48,
+    68
+  ],
+  "origin": [
+    24,
+    67
   ],
   "animations": {
     "idle": {
       "frames": 8,
-      "fps": 8,
+      "fps": 60.0,
       "loop": true,
-      "row": 0
+      "row": 0,
+      "ticks": [
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8
+      ],
+      "total_ticks": 64
     }
   }
 }

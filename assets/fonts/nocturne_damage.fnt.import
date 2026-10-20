@@ -1,0 +1,17 @@
+[remap]
+
+importer="font_data_bmfont"
+type="FontFile"
+uid="uid://bjqvb4jxcndi7"
+path="res://.godot/imported/nocturne_damage.fnt-83d431204b3598b847119cf5ec6ada0a.fontdata"
+
+[deps]
+
+source_file="res://assets/fonts/nocturne_damage.fnt"
+dest_files=["res://.godot/imported/nocturne_damage.fnt-83d431204b3598b847119cf5ec6ada0a.fontdata"]
+
+[params]
+
+fallbacks=[]
+compress=true
+scaling_mode=2

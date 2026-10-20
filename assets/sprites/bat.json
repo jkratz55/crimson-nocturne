@@ -3,18 +3,57 @@
     32,
     32
   ],
+  "origin": [
+    16,
+    16
+  ],
   "animations": {
     "fly": {
-      "frames": 4,
-      "fps": 12,
+      "frames": 13,
+      "fps": 60.0,
       "loop": true,
-      "row": 0
+      "row": 0,
+      "ticks": [
+        4,
+        1,
+        1,
+        1,
+        1,
+        1,
+        4,
+        2,
+        2,
+        2,
+        1,
+        2,
+        2
+      ],
+      "total_ticks": 24
     },
     "hang": {
-      "frames": 1,
-      "fps": 1,
+      "frames": 4,
+      "fps": 60.0,
+      "loop": true,
+      "row": 1,
+      "ticks": [
+        24,
+        10,
+        24,
+        10
+      ],
+      "total_ticks": 68
+    },
+    "unfurl": {
+      "frames": 3,
+      "fps": 60.0,
       "loop": false,
-      "row": 1
+      "row": 2,
+      "ticks": [
+        4,
+        3,
+        4
+      ],
+      "total_ticks": 11
     }
   }
 }

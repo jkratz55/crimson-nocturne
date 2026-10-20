@@ -9,7 +9,7 @@ against [`SPEC.md`](SPEC.md) — a phased specification with MUST/SHOULD/MAY
 requirements. **Read `SPEC.md` before doing feature work**; it dictates the
 build order (Phases 0–4), what is explicitly out of scope, and several exact
 formulas. `ASSUMPTIONS.md` records every decision taken where the spec left a
-blank, plus the two places the project knowingly deviates from it — update it
+blank, plus the three places the project knowingly deviates from it — update it
 when you make another such call.
 
 Phases 0–2 are implemented (moveset, combat, persistence, progression).
@@ -24,8 +24,8 @@ Godot is not on `PATH` on this machine:
 GODOT=/Applications/Godot.app/Contents/MacOS/Godot
 
 $GODOT --path . res://scenes/main.tscn          # play
-$GODOT --headless --path . --import             # reimport assets; also compiles every
-                                                # script — use it to surface errors/warnings
+$GODOT --headless --path . --import             # reimport assets; parse errors only, and
+                                                # only in the scripts it loads
 $GODOT --headless --path . res://tests/unit_test.tscn    # logic tests   (exit 0 = pass)
 $GODOT --headless --path . res://tests/smoke_test.tscn   # in-game tests (exit 0 = pass, ~40s)
 ```
@@ -37,9 +37,18 @@ a run, comment out calls in `_run()` in the relevant test script.
 Headless stdout is block-buffered when redirected, so a long run looks hung —
 redirect to a file and read it after the process exits rather than tailing it.
 
+A clean `--import` proves little. It parses only the scripts it loads
+(autoloads, what they depend on, scenes the editor layout reopens), so a
+parse error in an otherwise unreferenced script passes silently. It also
+prints no GDScript warnings, so it says nothing about `untyped_declaration` /
+`unsafe_call_argument`. Run the test suites to load the rest, and check
+warnings in the editor's Errors panel, or run a headless editor with
+`--lsp-port` on a scratch copy of the project and read its diagnostics.
+
 ### Asset pipeline
 
-All art and audio is generated, not sourced (see *Licensing* below).
+All art and audio is generated, not sourced (see *Licensing* below). The art
+rules every generator follows are in `docs/art_style.md`.
 
 ```bash
 python3 tools/asset_pipeline/build_all.py         # all art + audio
@@ -48,20 +57,43 @@ python3 tools/level_builder/build_castle_hall.py  # regenerate the room scene
 $GODOT --headless --path . --import               # then always reimport
 ```
 
+- Modules: `hero` (+ `hero_rig`, `hero_figure`, `hero_paint`), `enemies`, `fx`,
+  `props`, `items`, `equipment`, `ui`, `tiles`, `backgrounds`, `audio`. `common`
+  holds the shared `RAMPS` palette and `SheetBuilder`; `preview.py` is dev-only
+  and refuses to write into the repo.
+- Run order: `build_castle_hall.py` reads `assets/tiles/castle_tiles.json` and
+  `assets/backgrounds/layers.json`, so run it after `tiles.py` and
+  `backgrounds.py` (`build_all.py` does not run it).
 - Needs **Python ≥ 3.10** (`common.py` uses PEP 604 unions at runtime). macOS
   system `python3` is 3.9 and fails at import with a `TypeError` on
   `tuple[...] | tuple[...]`; use `/opt/homebrew/opt/python@3.14/bin/python3.14`
   or a venv from it.
 - `pip install pillow numpy scipy`, plus `ffmpeg` with libvorbis for the music.
+  Without libvorbis, `build_all.py` fails at the music step (the last one, after
+  the art is written); run the art modules on their own instead.
 - `tools/` and `docs/` carry `.gdignore`, so Godot never scans them.
 
 ### Regenerated files are not hand-editable
 
 `scenes/rooms/castle_hall.tscn` is written by `build_castle_hall.py` (tile data
 is a binary `PackedByteArray`; the ASCII layout in the builder is the readable
-source). Re-running it **overwrites editor changes**. Same for
-`resources/sprite_frames/*.tres` and `assets/sprites/*.json`, which
-`SheetBuilder` emits. Edit the generator, not the output.
+source). Re-running it **overwrites editor changes**. The same goes for:
+
+- every `resources/sprite_frames/*_frames.tres` and `assets/sprites/*.png` /
+  `*.json` (`SheetBuilder` and the sprite modules);
+- `resources/tilesets/castle_tileset.tres` (its collision polygons live in
+  `tiles.py`), `assets/tiles/castle_tiles.png` / `castle_tiles.json` and
+  `assets/tiles/castle_foreground.png` (`tiles.py`);
+- `assets/backgrounds/*.png` and `layers.json` (`backgrounds.py`; `ambient_fx.gd`
+  reads the Hall `motes` from it at runtime);
+- `assets/fonts/*.fnt` / `*.png` and `assets/ui/*.png` (`ui.py`, except
+  `gold_icon.png` from `equipment.py`; windows are baked at their on-screen
+  size, so `ui.WINDOWS` must match the NinePatchRect rects);
+- `assets/audio/sfx/*.wav` and `assets/audio/music/*.ogg` (`audio.py`).
+
+Edit the generator, not the output. An open editor re-saves generated `.tres`
+files in its own format (uid lines, `loop` 1/0, reordered entries), so after a
+regeneration compare SpriteFrames semantically, not byte for byte.
 
 ## Architecture
 
@@ -151,6 +183,17 @@ weapons, rings or item types appear with no UI changes.
   consistently — check them before adding an `Area2D`.
 - Behaviour is explicit state machines (`Player.State` enum + `_change_state`,
   `Enemy._ai_process`), not branching `_process` bodies.
+- **Animation timing is authored in 60 Hz ticks** (SpriteFrames `speed` 60,
+  per-frame `duration` in ticks). Gameplay indexes into the generated sheets:
+  `WeaponData.active_frames`, the throw spawn frame (`player.gd`, frame 1) and
+  `Skeleton.THROW_RELEASE_FRAME` (must equal `ATTACK_RELEASE_FRAME` in
+  `enemies.py`). Change frame counts or ticks in `hero.py` / `enemies.py` and
+  these must move with them — no test pins the windows yet.
+- **Presentation is visual only.** Flourishes (`land`, `run_start`, `skid`,
+  `turn`, `apex`, `double_jump`) are picked on top of `Player.State`, never as
+  new states; enemy death visuals hang off `Enemy._spawn_death_visuals()`;
+  visual effects roll on a private `RandomNumberGenerator`, never the global
+  one (the older screen shake and SFX pitch jitter still use the global RNG).
 
 ## Licensing constraint
 
@@ -158,7 +201,9 @@ Every sprite, tile, font, SFX and the music track is generated in-tree by
 `tools/`. Do not add ripped assets from commercial games, and do not add
 third-party packs or Godot addons without checking with the user — the
 no-vendored-dependencies property is why the tests use the in-tree headless
-harness instead of GUT (see `ASSUMPTIONS.md`).
+harness instead of GUT (see `ASSUMPTIONS.md`). The art evokes *Symphony of
+the Night* but never copies it — no traced or from-memory sprites — and
+Vesper is an original character, not Alucard (`docs/art_style.md`, *Do not*).
 
 ## Other agent configs
 

@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=15 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/hud.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://assets/ui/hud_frame.png" id="2_frame"]
@@ -6,6 +6,44 @@
 [ext_resource type="Texture2D" path="res://assets/ui/bar_mp.png" id="4_mp"]
 [ext_resource type="Texture2D" path="res://assets/ui/heart_icon.png" id="5_heart"]
 [ext_resource type="Texture2D" path="res://assets/ui/gold_icon.png" id="6_gold"]
+[ext_resource type="FontFile" path="res://assets/fonts/nocturne_hp.fnt" id="7_hp_font"]
+[ext_resource type="FontFile" path="res://assets/fonts/nocturne_small.fnt" id="8_small_font"]
+[ext_resource type="FontFile" path="res://assets/fonts/nocturne_title.fnt" id="9_title_font"]
+[ext_resource type="Texture2D" path="res://assets/ui/area_banner.png" id="10_banner"]
+[ext_resource type="Texture2D" path="res://assets/ui/notice_plate.png" id="12_notice"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_banner"]
+content_margin_left = 0.0
+content_margin_top = 0.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
+texture = ExtResource("10_banner")
+texture_margin_left = 8.0
+texture_margin_top = 10.0
+texture_margin_right = 8.0
+texture_margin_bottom = 10.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_notice"]
+content_margin_left = 6.0
+content_margin_top = 4.0
+content_margin_right = 6.0
+content_margin_bottom = 2.0
+texture = ExtResource("12_notice")
+texture_margin_left = 4.0
+texture_margin_top = 4.0
+texture_margin_right = 4.0
+texture_margin_bottom = 4.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_ledger"]
+content_margin_left = 6.0
+content_margin_top = 4.0
+content_margin_right = 6.0
+content_margin_bottom = 3.0
+texture = ExtResource("12_notice")
+texture_margin_left = 4.0
+texture_margin_top = 4.0
+texture_margin_right = 4.0
+texture_margin_bottom = 4.0
 
 [node name="HUD" type="CanvasLayer"]
 layer = 10
@@ -22,30 +60,30 @@ mouse_filter = 2
 
 [node name="StatusFrame" type="TextureRect" parent="Root"]
 layout_mode = 0
-offset_left = 4.0
-offset_top = 4.0
-offset_right = 120.0
-offset_bottom = 34.0
+offset_left = 2.0
+offset_top = 2.0
+offset_right = 134.0
+offset_bottom = 36.0
 mouse_filter = 2
 texture = ExtResource("2_frame")
 
 [node name="SubweaponIcon" type="TextureRect" parent="Root/StatusFrame"]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 6.0
-offset_top = 7.0
-offset_right = 22.0
-offset_bottom = 23.0
+offset_left = 9.0
+offset_top = 9.0
+offset_right = 25.0
+offset_bottom = 25.0
 mouse_filter = 2
 stretch_mode = 3
 
 [node name="HPBar" type="TextureProgressBar" parent="Root/StatusFrame"]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 31.0
-offset_top = 10.0
-offset_right = 99.0
-offset_bottom = 16.0
+offset_left = 36.0
+offset_top = 22.0
+offset_right = 60.0
+offset_bottom = 24.0
 mouse_filter = 2
 max_value = 80.0
 value = 80.0
@@ -54,10 +92,10 @@ texture_progress = ExtResource("3_hp")
 [node name="MPBar" type="TextureProgressBar" parent="Root/StatusFrame"]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 31.0
-offset_top = 18.0
-offset_right = 83.0
-offset_bottom = 22.0
+offset_left = 67.0
+offset_top = 21.0
+offset_right = 113.0
+offset_bottom = 24.0
 mouse_filter = 2
 max_value = 50.0
 value = 50.0
@@ -66,96 +104,140 @@ texture_progress = ExtResource("4_mp")
 [node name="HPLabel" type="Label" parent="Root/StatusFrame"]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 99.0
-offset_top = 5.0
-offset_right = 115.0
-offset_bottom = 15.0
+offset_left = 34.0
+offset_top = 9.0
+offset_right = 63.0
+offset_bottom = 22.0
+theme_override_fonts/font = ExtResource("7_hp_font")
+theme_override_font_sizes/font_size = 13
 text = "80"
 horizontal_alignment = 1
 
 [node name="HeartIcon" type="TextureRect" parent="Root/StatusFrame"]
 layout_mode = 0
-offset_left = 87.0
-offset_top = 17.0
-offset_right = 96.0
-offset_bottom = 25.0
+offset_left = 67.0
+offset_top = 10.0
+offset_right = 76.0
+offset_bottom = 18.0
 mouse_filter = 2
 texture = ExtResource("5_heart")
 
 [node name="HeartsLabel" type="Label" parent="Root/StatusFrame"]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 97.0
-offset_top = 16.0
-offset_right = 115.0
-offset_bottom = 26.0
+offset_left = 77.0
+offset_top = 11.0
+offset_right = 93.0
+offset_bottom = 18.0
+theme_override_fonts/font = ExtResource("8_small_font")
+theme_override_font_sizes/font_size = 7
 text = "10"
 
-[node name="LevelLabel" type="Label" parent="Root"]
+[node name="LevelLabel" type="Label" parent="Root/StatusFrame"]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 124.0
-offset_top = 6.0
-offset_right = 184.0
-offset_bottom = 16.0
-theme_override_colors/font_color = Color(0.94, 0.78, 0.36, 1)
+offset_left = 90.0
+offset_top = 11.0
+offset_right = 114.0
+offset_bottom = 18.0
+theme_override_colors/font_color = Color(0.7, 0.72, 0.9, 1)
+theme_override_fonts/font = ExtResource("8_small_font")
+theme_override_font_sizes/font_size = 7
 text = "LV 1"
+horizontal_alignment = 2
 
-[node name="XPLabel" type="Label" parent="Root"]
+[node name="Ledger" type="PanelContainer" parent="Root"]
 unique_name_in_owner = true
-layout_mode = 0
-offset_left = 124.0
-offset_top = 17.0
-offset_right = 200.0
-offset_bottom = 27.0
-theme_override_colors/font_color = Color(0.58, 0.56, 0.7, 1)
-text = "NEXT 50"
-
-[node name="GoldIcon" type="TextureRect" parent="Root"]
+modulate = Color(1, 1, 1, 0)
 layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -76.0
-offset_top = 5.0
-offset_right = -66.0
-offset_bottom = 15.0
+offset_left = -78.0
+offset_top = 2.0
+offset_right = -3.0
+offset_bottom = 20.0
 grow_horizontal = 0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_ledger")
+
+[node name="Row" type="HBoxContainer" parent="Root/Ledger"]
+custom_minimum_size = Vector2(0, 11)
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 6
+
+[node name="XPLabel" type="Label" parent="Root/Ledger/Row"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.78, 0.88, 1)
+text = "NEXT 50"
+vertical_alignment = 2
+
+[node name="Gold" type="HBoxContainer" parent="Root/Ledger/Row"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 2
+
+[node name="GoldIcon" type="TextureRect" parent="Root/Ledger/Row/Gold"]
+layout_mode = 2
+size_flags_vertical = 4
 mouse_filter = 2
 texture = ExtResource("6_gold")
 
-[node name="GoldLabel" type="Label" parent="Root"]
+[node name="GoldLabel" type="Label" parent="Root/Ledger/Row/Gold"]
 unique_name_in_owner = true
-layout_mode = 1
-anchors_preset = 1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -64.0
-offset_top = 5.0
-offset_right = -6.0
-offset_bottom = 15.0
-grow_horizontal = 0
-theme_override_colors/font_color = Color(0.94, 0.78, 0.36, 1)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.91, 0.77, 0.43, 1)
 text = "0"
+vertical_alignment = 2
 
 [node name="WeaponLabel" type="Label" parent="Root"]
 unique_name_in_owner = true
 modulate = Color(1, 1, 1, 0)
 layout_mode = 0
-offset_left = 8.0
-offset_top = 34.0
-offset_right = 128.0
-offset_bottom = 44.0
-theme_override_colors/font_color = Color(0.94, 0.78, 0.36, 1)
+offset_left = 6.0
+offset_top = 38.0
+offset_right = 6.0
+offset_bottom = 54.0
+theme_override_colors/font_color = Color(0.91, 0.77, 0.43, 1)
+theme_override_styles/normal = SubResource("StyleBoxTexture_notice")
 text = "SHORT SWORD"
 
 [node name="AreaTitle" type="Label" parent="Root"]
 unique_name_in_owner = true
 layout_mode = 1
-anchors_preset = 10
-anchor_right = 1.0
-offset_top = 44.0
-offset_bottom = 54.0
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -116.0
+offset_top = 54.0
+offset_right = 116.0
+offset_bottom = 98.0
 grow_horizontal = 2
+grow_vertical = 2
+theme_override_fonts/font = ExtResource("9_title_font")
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxTexture_banner")
 text = "AREA"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="LevelUpLabel" type="Label" parent="Root"]
+unique_name_in_owner = true
+modulate = Color(1, 1, 1, 0)
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -64.0
+offset_top = 44.0
+offset_right = 64.0
+offset_bottom = 60.0
+grow_horizontal = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 0.86, 0.52, 1)
+theme_override_fonts/font = ExtResource("9_title_font")
+theme_override_font_sizes/font_size = 16
+text = "LEVEL UP"
 horizontal_alignment = 1

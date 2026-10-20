@@ -16,14 +16,27 @@ signal closed
 
 const COLOR_ROW: Color = Color(0.72, 0.70, 0.80)
 const COLOR_HIGHLIGHT: Color = Color(0.94, 0.78, 0.36)
+## The selected slot's text over the selection bar (the theme's white).
+const COLOR_SELECTED: Color = Color(0.94, 0.94, 0.97)
 const COLOR_EMPTY: Color = Color(0.45, 0.43, 0.55)
+## Row pitch. The rows are tall so the three slots breathe, but each holds a
+## single line of caps, centred (rows 6-12 of the 22).
 const ROW_HEIGHT: float = 22.0
+## The selection bar is one text line tall like every other menu's (11 px),
+## centred on the row's caps rather than filling the whole 22-px row.
+const BAR_HEIGHT: float = 11.0
+const BAR_INSET: float = 4.0
 
 @export var cursor_texture: Texture2D
 
 @onready var _slot_list: VBoxContainer = %SlotList
 @onready var _message: Label = %Message
 @onready var _hint: Label = %Hint
+## SotN-style pulsing bar behind the selected slot (optional node).
+@onready var _bar: Control = get_node_or_null(^"%SaveBar") as Control
+## The window that unfolds when the picker opens (visual only).
+@onready var _window: Control = get_node_or_null(^"Root/Panel") as Control
+var _unfold_tween: Tween
 
 var is_open: bool = false
 
@@ -74,6 +87,10 @@ func open(room_id: StringName, spawn_position: Vector2) -> void:
 	is_open = true
 	visible = true
 	get_tree().paused = true
+	if _window != null:
+		if _unfold_tween != null and _unfold_tween.is_valid():
+			_unfold_tween.kill()
+		_unfold_tween = MenuFx.unfold(self, [_window] as Array[Control])
 	Audio.play_sfx(&"menu_select", 0.0, -3.0)
 	opened.emit()
 
@@ -83,6 +100,10 @@ func close() -> void:
 		return
 	is_open = false
 	visible = false
+	if _window != null:
+		if _unfold_tween != null and _unfold_tween.is_valid():
+			_unfold_tween.kill()
+		MenuFx.reset([_window] as Array[Control])
 	get_tree().paused = false
 	Audio.play_sfx(&"menu_move", 0.0, -3.0)
 	closed.emit()
@@ -121,6 +142,10 @@ func _refresh() -> void:
 		child.queue_free()
 	for info: SaveManager.SlotInfo in SaveManager.get_all_slot_info():
 		_slot_list.add_child(_make_row(info, info.slot == _row))
+	if _bar != null:
+		_bar.visible = true
+		_bar.size.y = BAR_HEIGHT
+		_bar.position.y = _slot_list.position.y + _row * ROW_HEIGHT + BAR_INSET
 
 
 func _make_row(info: SaveManager.SlotInfo, selected: bool) -> Control:
@@ -128,15 +153,18 @@ func _make_row(info: SaveManager.SlotInfo, selected: bool) -> Control:
 	row.custom_minimum_size = Vector2(0.0, ROW_HEIGHT)
 	row.add_theme_constant_override(&"separation", 4)
 
+	# The shard keeps its width on every row, so moving the selection never
+	# shifts the text; it is only drawn when there is no selection bar.
 	var cursor := TextureRect.new()
 	cursor.texture = cursor_texture
-	cursor.visible = selected
+	cursor.modulate.a = 1.0 if selected and _bar == null else 0.0
 	cursor.custom_minimum_size = Vector2(7.0, 9.0)
 	cursor.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
 	cursor.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	row.add_child(cursor)
 
-	var color: Color = COLOR_HIGHLIGHT if selected else (COLOR_ROW if info.exists else COLOR_EMPTY)
+	var selected_color: Color = COLOR_SELECTED if _bar != null else COLOR_HIGHLIGHT
+	var color: Color = selected_color if selected else (COLOR_ROW if info.exists else COLOR_EMPTY)
 	var name_label := Label.new()
 	name_label.text = "SLOT %d" % (info.slot + 1)
 	name_label.custom_minimum_size = Vector2(56.0, 0.0)

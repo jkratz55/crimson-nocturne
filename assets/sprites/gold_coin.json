@@ -6,9 +6,18 @@
   "animations": {
     "spin": {
       "frames": 6,
-      "fps": 12,
+      "fps": 60.0,
       "loop": true,
-      "row": 0
+      "row": 0,
+      "ticks": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4
+      ],
+      "total_ticks": 24
     }
   }
 }

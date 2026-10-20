@@ -1,0 +1,48 @@
+{
+  "frame_size": [
+    96,
+    224
+  ],
+  "origin": [
+    48,
+    192
+  ],
+  "animations": {
+    "default": {
+      "frames": 8,
+      "fps": 60.0,
+      "loop": true,
+      "row": 0,
+      "ticks": [
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8
+      ],
+      "total_ticks": 64
+    },
+    "activate": {
+      "frames": 10,
+      "fps": 60.0,
+      "loop": false,
+      "row": 1,
+      "ticks": [
+        2,
+        2,
+        3,
+        3,
+        4,
+        4,
+        4,
+        5,
+        6,
+        8
+      ],
+      "total_ticks": 41
+    }
+  }
+}

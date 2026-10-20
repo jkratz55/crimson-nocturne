@@ -1,7 +1,22 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/title_menu.gd" id="1"]
-[ext_resource type="Texture2D" path="res://assets/ui/menu_frame.png" id="2"]
+[ext_resource type="Texture2D" path="res://assets/ui/window_title.png" id="2"]
+[ext_resource type="Texture2D" path="res://assets/ui/title_backdrop.png" id="3"]
+[ext_resource type="FontFile" path="res://assets/fonts/nocturne_title.fnt" id="4"]
+[ext_resource type="Script" path="res://scripts/ui/selection_bar.gd" id="90_selection_bar"]
+[ext_resource type="Texture2D" path="res://assets/ui/notice_plate.png" id="5_notice"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_notice"]
+content_margin_left = 6.0
+content_margin_top = 4.0
+content_margin_right = 6.0
+content_margin_bottom = 2.0
+texture = ExtResource("5_notice")
+texture_margin_left = 4.0
+texture_margin_top = 4.0
+texture_margin_right = 4.0
+texture_margin_bottom = 4.0
 
 [node name="TitleMenu" type="Control"]
 layout_mode = 3
@@ -10,56 +25,79 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 script = ExtResource("1")
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="Background" type="TextureRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0.03, 0.02, 0.06, 1)
 mouse_filter = 2
+texture = ExtResource("3")
 
 [node name="Frame" type="NinePatchRect" parent="."]
-offset_left = 16.0
-offset_top = 16.0
-offset_right = 368.0
-offset_bottom = 200.0
+offset_left = 92.0
+offset_top = 70.0
+offset_right = 292.0
+offset_bottom = 150.0
 texture = ExtResource("2")
-patch_margin_left = 14
-patch_margin_top = 14
-patch_margin_right = 14
-patch_margin_bottom = 14
+patch_margin_left = 6
+patch_margin_top = 6
+patch_margin_right = 6
+patch_margin_bottom = 6
 mouse_filter = 2
 
 [node name="Title" type="Label" parent="."]
+visible = false
 offset_left = 24.0
-offset_top = 37.0
+offset_top = 24.0
 offset_right = 360.0
-offset_bottom = 49.0
+offset_bottom = 40.0
 text = "CRIMSON NOCTURNE"
 horizontal_alignment = 1
-theme_override_colors/font_color = Color(0.94, 0.78, 0.36, 1)
+theme_override_colors/font_color = Color(0.96, 0.82, 0.48, 1)
+theme_override_fonts/font = ExtResource("4")
+theme_override_font_sizes/font_size = 16
+
+[node name="TitleBar" type="ColorRect" parent="."]
+script = ExtResource("90_selection_bar")
+unique_name_in_owner = true
+visible = false
+offset_left = 100.0
+offset_top = 85.0
+offset_right = 284.0
+offset_bottom = 95.0
+mouse_filter = 2
+color = Color(0.25, 0.016, 0.055, 1)
 
 [node name="Options" type="VBoxContainer" parent="."]
 unique_name_in_owner = true
 offset_left = 28.0
 offset_top = 76.0
 offset_right = 356.0
-offset_bottom = 142.0
+offset_bottom = 143.0
 theme_override_constants/separation = 9
+alignment = 1
 
 [node name="Message" type="Label" parent="."]
 unique_name_in_owner = true
-offset_left = 24.0
-offset_top = 155.0
-offset_right = 360.0
-offset_bottom = 167.0
+visible = false
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = 0.0
+offset_top = 156.0
+offset_right = 0.0
+offset_bottom = 172.0
+grow_horizontal = 2
+theme_override_styles/normal = SubResource("StyleBoxTexture_notice")
 horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="Hint" type="Label" parent="."]
 unique_name_in_owner = true
 offset_left = 24.0
-offset_top = 179.0
+offset_top = 196.0
 offset_right = 360.0
-offset_bottom = 191.0
+offset_bottom = 206.0
 horizontal_alignment = 1
-theme_override_colors/font_color = Color(0.6, 0.58, 0.7, 1)
+theme_override_colors/font_color = Color(0.6, 0.6, 0.74, 1)

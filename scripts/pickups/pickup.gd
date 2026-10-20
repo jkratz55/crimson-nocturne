@@ -21,6 +21,8 @@ enum Kind { HEARTS, HEALTH, GOLD }
 @export var pop_velocity: float = -90.0
 @export var lifetime: float = 8.0
 @export var collect_sfx: StringName = &"heart_pickup"
+## Little additive star left behind when it is collected (visual only).
+@export var collect_effect_scene: PackedScene = preload("res://scenes/fx/pickup_sparkle.tscn")
 
 @onready var collect_area: Area2D = $CollectArea
 ## Sprite2D for a still pickup, AnimatedSprite2D for a spinning one.
@@ -33,6 +35,15 @@ var _gravity: float = ProjectSettings.get_setting("physics/2d/default_gravity")
 func _ready() -> void:
 	velocity.y = pop_velocity
 	collect_area.body_entered.connect(_on_body_entered)
+	# Start the baked glint / coin spin at a random moment of its cycle (not a
+	# random frame: the glint frames are short, see [AnimPhase]), so drops
+	# spawned together do not glint together. A private generator, so a drop
+	# never shifts the gameplay rolls.
+	var anim := sprite as AnimatedSprite2D
+	if anim != null:
+		var rng := RandomNumberGenerator.new()
+		rng.randomize()
+		AnimPhase.randomize_phase(anim, rng)
 
 
 func _physics_process(delta: float) -> void:
@@ -63,4 +74,16 @@ func _on_body_entered(body: Node2D) -> void:
 		Kind.GOLD:
 			GameManager.add_gold(amount)
 	Audio.play_sfx(collect_sfx)
+	_spawn_collect_effect()
 	queue_free()
+
+
+func _spawn_collect_effect() -> void:
+	if collect_effect_scene == null or get_parent() == null:
+		return
+	var fx := collect_effect_scene.instantiate() as Node2D
+	if fx == null:
+		return
+	fx.position = position + Vector2(0.0, -6.0)
+	# Deferred: we are inside a physics callback.
+	get_parent().add_child.call_deferred(fx)

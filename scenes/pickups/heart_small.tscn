@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scripts/pickups/pickup.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://assets/sprites/heart_small.png" id="2_tex"]
+[ext_resource type="SpriteFrames" path="res://resources/sprite_frames/pickup_heart_small_frames.tres" id="2_frames"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_body"]
 size = Vector2(6, 6)
@@ -17,8 +17,10 @@ amount = 1
 sway_amplitude = 24.0
 fall_speed = 40.0
 
-[node name="Sprite" type="Sprite2D" parent="."]
-texture = ExtResource("2_tex")
+[node name="Sprite" type="AnimatedSprite2D" parent="."]
+sprite_frames = ExtResource("2_frames")
+animation = &"idle"
+autoplay = "idle"
 offset = Vector2(0, -4)
 
 [node name="BodyShape" type="CollisionShape2D" parent="."]

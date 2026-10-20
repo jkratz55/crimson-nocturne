@@ -1,0 +1,17 @@
+[remap]
+
+importer="font_data_bmfont"
+type="FontFile"
+uid="uid://dpxhheqlj8qp2"
+path="res://.godot/imported/nocturne_title.fnt-8071d6770cd6cc98e2a237e1bf2848df.fontdata"
+
+[deps]
+
+source_file="res://assets/fonts/nocturne_title.fnt"
+dest_files=["res://.godot/imported/nocturne_title.fnt-8071d6770cd6cc98e2a237e1bf2848df.fontdata"]
+
+[params]
+
+fallbacks=[]
+compress=true
+scaling_mode=2

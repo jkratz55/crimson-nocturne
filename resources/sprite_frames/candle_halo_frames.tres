@@ -1,0 +1,39 @@
+[gd_resource type="SpriteFrames" format=3 uid="uid://dhcmbmhffosba"]
+
+[ext_resource type="Texture2D" uid="uid://bpdf4gq7l0bqy" path="res://assets/sprites/candle_halo.png" id="1_sheet"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_r0c0"]
+atlas = ExtResource("1_sheet")
+region = Rect2(0, 0, 56, 56)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_r0c1"]
+atlas = ExtResource("1_sheet")
+region = Rect2(56, 0, 56, 56)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_r0c2"]
+atlas = ExtResource("1_sheet")
+region = Rect2(112, 0, 56, 56)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_r0c3"]
+atlas = ExtResource("1_sheet")
+region = Rect2(168, 0, 56, 56)
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 9.0,
+"texture": SubResource("AtlasTexture_r0c0")
+}, {
+"duration": 7.0,
+"texture": SubResource("AtlasTexture_r0c1")
+}, {
+"duration": 11.0,
+"texture": SubResource("AtlasTexture_r0c2")
+}, {
+"duration": 8.0,
+"texture": SubResource("AtlasTexture_r0c3")
+}],
+"loop": 1,
+"name": &"default",
+"speed": 60.0
+}]

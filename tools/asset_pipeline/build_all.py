@@ -1,14 +1,28 @@
-"""Regenerate every procedural asset: `python3 tools/asset_pipeline/build_all.py`."""
+"""Regenerate every procedural asset: `python3 tools/asset_pipeline/build_all.py`.
+
+Each module also runs on its own (`python3 tools/asset_pipeline/<module>.py`)
+and writes only its own outputs.
+"""
 import audio
-import environment
+import backgrounds
+import enemies
 import equipment
+import fx
 import hero
-import sprites_misc
+import items
+import props
+import tiles
+import ui
 
 if __name__ == "__main__":
     hero.build()
-    sprites_misc.build()
+    enemies.build()
+    fx.build()
+    items.build()
+    props.build()
+    ui.build()
     equipment.build()
-    environment.build()
+    tiles.build()
+    backgrounds.build()
     audio.build()
     print("All assets generated.")

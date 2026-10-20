@@ -1,30 +1,54 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene format=3 uid="uid://didm6kmykleco"]
 
-[ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
+[ext_resource type="Script" uid="uid://dbnlmkucw8a1e" path="res://scripts/main.gd" id="1_main"]
 [ext_resource type="PackedScene" path="res://scenes/rooms/castle_hall.tscn" id="2_room"]
 [ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="3_hud"]
 [ext_resource type="PackedScene" path="res://scenes/ui/pause_menu.tscn" id="4_pause_menu"]
 [ext_resource type="PackedScene" path="res://scenes/ui/save_menu.tscn" id="5_save_menu"]
+[ext_resource type="FontFile" uid="uid://dpxhheqlj8qp2" path="res://assets/fonts/nocturne_title.fnt" id="6_title_font"]
+[ext_resource type="Script" uid="uid://cawqar2pf20iu" path="res://scripts/ui/death_tint.gd" id="7_death_tint"]
+[ext_resource type="Texture2D" uid="uid://t0kechacuk4k" path="res://assets/ui/notice_plate.png" id="8_notice"]
 
-[node name="Main" type="Node"]
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_notice"]
+content_margin_left = 6.0
+content_margin_top = 4.0
+content_margin_right = 6.0
+content_margin_bottom = 2.0
+texture = ExtResource("8_notice")
+texture_margin_left = 4.0
+texture_margin_top = 4.0
+texture_margin_right = 4.0
+texture_margin_bottom = 4.0
+
+[node name="Main" type="Node" unique_id=583098262]
 script = ExtResource("1_main")
 
-[node name="World" type="Node" parent="."]
+[node name="World" type="Node" parent="." unique_id=379808174]
 process_mode = 1
 
-[node name="CastleHall" parent="World" instance=ExtResource("2_room")]
+[node name="CastleHall" parent="World" unique_id=1883147831 instance=ExtResource("2_room")]
 
-[node name="HUD" parent="." instance=ExtResource("3_hud")]
+[node name="HUD" parent="." unique_id=1341014954 instance=ExtResource("3_hud")]
 process_mode = 1
 
-[node name="PauseMenu" parent="." instance=ExtResource("4_pause_menu")]
+[node name="PauseMenu" parent="." unique_id=1138884760 instance=ExtResource("4_pause_menu")]
 
-[node name="SaveMenu" parent="." instance=ExtResource("5_save_menu")]
+[node name="SaveMenu" parent="." unique_id=100659019 instance=ExtResource("5_save_menu")]
 
-[node name="Overlay" type="CanvasLayer" parent="."]
+[node name="Overlay" type="CanvasLayer" parent="." unique_id=1768980294]
 layer = 20
 
-[node name="Fade" type="ColorRect" parent="Overlay"]
+[node name="DeathTint" type="ColorRect" parent="Overlay" unique_id=1407731519]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.16, 0.02, 0.06, 0)
+script = ExtResource("7_death_tint")
+
+[node name="Fade" type="ColorRect" parent="Overlay" unique_id=554076326]
 unique_name_in_owner = true
 anchors_preset = 15
 anchor_right = 1.0
@@ -34,31 +58,36 @@ grow_vertical = 2
 mouse_filter = 2
 color = Color(0, 0, 0, 1)
 
-[node name="DeathLabel" type="Label" parent="Overlay"]
+[node name="DeathLabel" type="Label" parent="Overlay" unique_id=862934464]
 unique_name_in_owner = true
 modulate = Color(0.85, 0.1, 0.18, 1)
 anchors_preset = 14
 anchor_top = 0.5
 anchor_right = 1.0
 anchor_bottom = 0.5
-offset_top = -5.0
-offset_bottom = 5.0
+offset_top = -8.0
+offset_bottom = 8.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_fonts/font = ExtResource("6_title_font")
+theme_override_font_sizes/font_size = 16
 text = "THY LIFE HAS ENDED"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="PauseLabel" type="Label" parent="Overlay"]
+[node name="PauseLabel" type="Label" parent="Overlay" unique_id=1875763367]
 unique_name_in_owner = true
-anchors_preset = 14
+anchors_preset = 8
+anchor_left = 0.5
 anchor_top = 0.5
-anchor_right = 1.0
+anchor_right = 0.5
 anchor_bottom = 0.5
-offset_top = -5.0
-offset_bottom = 5.0
+offset_top = -8.0
+offset_bottom = 8.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_colors/font_color = Color(0.91, 0.77, 0.43, 1)
+theme_override_styles/normal = SubResource("StyleBoxTexture_notice")
 text = "- PAUSED -"
 horizontal_alignment = 1
 vertical_alignment = 1

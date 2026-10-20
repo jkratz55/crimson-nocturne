@@ -1,14 +1,75 @@
 {
   "frame_size": [
-    32,
-    40
+    40,
+    88
+  ],
+  "origin": [
+    20,
+    87
   ],
   "animations": {
     "default": {
-      "frames": 10,
-      "fps": 16,
+      "frames": 12,
+      "fps": 60.0,
       "loop": false,
-      "row": 0
+      "row": 0,
+      "ticks": [
+        2,
+        2,
+        3,
+        3,
+        3,
+        3,
+        4,
+        4,
+        4,
+        4,
+        5,
+        5
+      ],
+      "total_ticks": 42
+    },
+    "smoke": {
+      "frames": 12,
+      "fps": 60.0,
+      "loop": false,
+      "row": 1,
+      "ticks": [
+        2,
+        2,
+        3,
+        3,
+        3,
+        3,
+        4,
+        4,
+        4,
+        4,
+        5,
+        5
+      ],
+      "total_ticks": 42
+    },
+    "default_body": {
+      "frames": 12,
+      "fps": 60.0,
+      "loop": false,
+      "row": 2,
+      "ticks": [
+        2,
+        2,
+        3,
+        3,
+        3,
+        3,
+        4,
+        4,
+        4,
+        4,
+        5,
+        5
+      ],
+      "total_ticks": 42
     }
   }
 }

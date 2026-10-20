@@ -1,0 +1,62 @@
+{
+  "frame_size": [
+    48,
+    96
+  ],
+  "origin": [
+    24,
+    95
+  ],
+  "animations": {
+    "default": {
+      "frames": 16,
+      "fps": 60.0,
+      "loop": false,
+      "row": 0,
+      "ticks": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4
+      ],
+      "total_ticks": 64
+    },
+    "embers": {
+      "frames": 16,
+      "fps": 60.0,
+      "loop": false,
+      "row": 1,
+      "ticks": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4
+      ],
+      "total_ticks": 64
+    }
+  }
+}

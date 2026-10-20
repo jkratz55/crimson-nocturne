@@ -1,98 +1,1517 @@
 {
   "frame_size": [
     128,
-    64
+    80
+  ],
+  "origin": [
+    64,
+    75
   ],
   "animations": {
     "idle": {
-      "frames": 4,
-      "fps": 5,
+      "frames": 6,
+      "fps": 60.0,
       "loop": true,
-      "row": 0
+      "row": 0,
+      "ticks": [
+        7,
+        7,
+        7,
+        7,
+        7,
+        7
+      ],
+      "total_ticks": 42,
+      "weapon": [
+        {
+          "hand": [
+            61.0,
+            54.5
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            61.0,
+            54.5
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            61.0,
+            54.0
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            61.0,
+            54.0
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            61.0,
+            54.5
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            61.0,
+            54.5
+          ],
+          "weapon": "none"
+        }
+      ]
     },
     "run": {
-      "frames": 8,
-      "fps": 14,
+      "frames": 16,
+      "fps": 60.0,
       "loop": true,
-      "row": 1
+      "row": 1,
+      "ticks": [
+        3,
+        2,
+        3,
+        2,
+        3,
+        2,
+        3,
+        2,
+        3,
+        2,
+        3,
+        2,
+        3,
+        2,
+        3,
+        2
+      ],
+      "total_ticks": 40,
+      "weapon": [
+        {
+          "hand": [
+            56.0,
+            50.0
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            57.0,
+            51.0
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            58.0,
+            51.5
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            60.5,
+            52.0
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            62.5,
+            51.0
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            65.5,
+            49.5
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            67.5,
+            47.5
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            69.0,
+            46.5
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            69.0,
+            47.5
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            68.5,
+            49.0
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            67.5,
+            49.5
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            64.5,
+            51.0
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            62.5,
+            51.0
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            59.5,
+            50.5
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            58.0,
+            49.5
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            56.5,
+            49.0
+          ],
+          "weapon": "none"
+        }
+      ]
     },
     "jump": {
-      "frames": 1,
-      "fps": 1,
+      "frames": 5,
+      "fps": 60.0,
       "loop": false,
-      "row": 2
+      "row": 2,
+      "ticks": [
+        3,
+        3,
+        4,
+        4,
+        6
+      ],
+      "total_ticks": 20,
+      "weapon": [
+        {
+          "hand": [
+            58.5,
+            49.0
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            58.0,
+            47.0
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            58.0,
+            45.5
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            58.0,
+            45.5
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            58.0,
+            45.5
+          ],
+          "weapon": "none"
+        }
+      ]
     },
     "fall": {
-      "frames": 1,
-      "fps": 1,
-      "loop": false,
-      "row": 3
+      "frames": 4,
+      "fps": 60.0,
+      "loop": true,
+      "row": 3,
+      "ticks": [
+        5,
+        5,
+        5,
+        5
+      ],
+      "total_ticks": 20,
+      "weapon": [
+        {
+          "hand": [
+            55.5,
+            41.0
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            55.5,
+            41.5
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            55.5,
+            41.0
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            55.5,
+            40.5
+          ],
+          "weapon": "none"
+        }
+      ]
     },
     "crouch": {
-      "frames": 1,
-      "fps": 1,
+      "frames": 4,
+      "fps": 60.0,
       "loop": false,
-      "row": 4
+      "row": 4,
+      "ticks": [
+        1,
+        1,
+        2,
+        30
+      ],
+      "total_ticks": 34,
+      "weapon": [
+        {
+          "hand": [
+            64.0,
+            57.5
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            67.0,
+            60.5
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            69.0,
+            62.5
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            69.5,
+            63.0
+          ],
+          "weapon": "none"
+        }
+      ]
     },
     "attack": {
-      "frames": 5,
-      "fps": 20,
+      "frames": 7,
+      "fps": 60.0,
       "loop": false,
-      "row": 5
+      "row": 5,
+      "ticks": [
+        2,
+        1,
+        2,
+        3,
+        4,
+        2,
+        1
+      ],
+      "total_ticks": 15,
+      "weapon": [
+        {
+          "hand": [
+            55.0,
+            33.5
+          ],
+          "weapon": "sabre",
+          "angle": -158.0,
+          "behind": true,
+          "tip": [
+            31.2,
+            25.6
+          ]
+        },
+        {
+          "hand": [
+            72.0,
+            34.0
+          ],
+          "weapon": "sabre",
+          "angle": -62.0,
+          "behind": false,
+          "tip": [
+            82.3,
+            11.2
+          ]
+        },
+        {
+          "hand": [
+            78.5,
+            42.5
+          ],
+          "weapon": "sabre",
+          "angle": 0.0,
+          "behind": false,
+          "tip": [
+            103.5,
+            40.9
+          ]
+        },
+        {
+          "hand": [
+            80.0,
+            43.5
+          ],
+          "weapon": "sabre",
+          "angle": 5.0,
+          "behind": false,
+          "tip": [
+            105.0,
+            44.1
+          ]
+        },
+        {
+          "hand": [
+            79.5,
+            44.5
+          ],
+          "weapon": "sabre",
+          "angle": 9.0,
+          "behind": false,
+          "tip": [
+            104.4,
+            46.8
+          ]
+        },
+        {
+          "hand": [
+            72.0,
+            48.5
+          ],
+          "weapon": "sabre",
+          "angle": 38.0,
+          "behind": false,
+          "tip": [
+            92.7,
+            62.6
+          ]
+        },
+        {
+          "hand": [
+            66.0,
+            51.5
+          ],
+          "weapon": "sabre",
+          "angle": 62.0,
+          "behind": false,
+          "tip": [
+            79.1,
+            72.8
+          ]
+        }
+      ]
     },
     "attack_crouch": {
-      "frames": 5,
-      "fps": 20,
+      "frames": 7,
+      "fps": 60.0,
       "loop": false,
-      "row": 6
+      "row": 6,
+      "ticks": [
+        2,
+        1,
+        2,
+        3,
+        4,
+        2,
+        1
+      ],
+      "total_ticks": 15,
+      "weapon": [
+        {
+          "hand": [
+            56.5,
+            46.5
+          ],
+          "weapon": "sabre",
+          "angle": -158.0,
+          "behind": true,
+          "tip": [
+            32.7,
+            38.6
+          ]
+        },
+        {
+          "hand": [
+            73.5,
+            47.0
+          ],
+          "weapon": "sabre",
+          "angle": -62.0,
+          "behind": false,
+          "tip": [
+            83.8,
+            24.2
+          ]
+        },
+        {
+          "hand": [
+            79.0,
+            55.5
+          ],
+          "weapon": "sabre",
+          "angle": 0.0,
+          "behind": false,
+          "tip": [
+            104.0,
+            53.9
+          ]
+        },
+        {
+          "hand": [
+            79.5,
+            56.0
+          ],
+          "weapon": "sabre",
+          "angle": 5.0,
+          "behind": false,
+          "tip": [
+            104.5,
+            56.6
+          ]
+        },
+        {
+          "hand": [
+            79.5,
+            57.0
+          ],
+          "weapon": "sabre",
+          "angle": 9.0,
+          "behind": false,
+          "tip": [
+            104.4,
+            59.3
+          ]
+        },
+        {
+          "hand": [
+            73.5,
+            61.5
+          ],
+          "weapon": "sabre",
+          "angle": 16.0,
+          "behind": false,
+          "tip": [
+            98.0,
+            66.9
+          ]
+        },
+        {
+          "hand": [
+            67.5,
+            64.5
+          ],
+          "weapon": "sabre",
+          "angle": 16.0,
+          "behind": false,
+          "tip": [
+            92.0,
+            69.9
+          ]
+        }
+      ]
     },
     "attack_air": {
-      "frames": 5,
-      "fps": 20,
+      "frames": 7,
+      "fps": 60.0,
       "loop": false,
-      "row": 7
+      "row": 7,
+      "ticks": [
+        2,
+        1,
+        2,
+        3,
+        4,
+        2,
+        1
+      ],
+      "total_ticks": 15,
+      "weapon": [
+        {
+          "hand": [
+            55.0,
+            30.5
+          ],
+          "weapon": "sabre",
+          "angle": -158.0,
+          "behind": true,
+          "tip": [
+            31.2,
+            22.6
+          ]
+        },
+        {
+          "hand": [
+            72.0,
+            31.0
+          ],
+          "weapon": "sabre",
+          "angle": -62.0,
+          "behind": false,
+          "tip": [
+            82.3,
+            8.2
+          ]
+        },
+        {
+          "hand": [
+            78.5,
+            42.5
+          ],
+          "weapon": "sabre",
+          "angle": 0.0,
+          "behind": false,
+          "tip": [
+            103.5,
+            40.9
+          ]
+        },
+        {
+          "hand": [
+            80.0,
+            43.5
+          ],
+          "weapon": "sabre",
+          "angle": 5.0,
+          "behind": false,
+          "tip": [
+            105.0,
+            44.1
+          ]
+        },
+        {
+          "hand": [
+            79.5,
+            44.5
+          ],
+          "weapon": "sabre",
+          "angle": 9.0,
+          "behind": false,
+          "tip": [
+            104.4,
+            46.8
+          ]
+        },
+        {
+          "hand": [
+            72.0,
+            46.5
+          ],
+          "weapon": "sabre",
+          "angle": 38.0,
+          "behind": false,
+          "tip": [
+            92.7,
+            60.6
+          ]
+        },
+        {
+          "hand": [
+            66.0,
+            48.5
+          ],
+          "weapon": "sabre",
+          "angle": 62.0,
+          "behind": false,
+          "tip": [
+            79.1,
+            69.8
+          ]
+        }
+      ]
     },
     "attack_whip": {
-      "frames": 5,
-      "fps": 20,
+      "frames": 8,
+      "fps": 60.0,
       "loop": false,
-      "row": 8
+      "row": 8,
+      "ticks": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        1
+      ],
+      "total_ticks": 15,
+      "weapon": [
+        {
+          "hand": [
+            57.5,
+            35.5
+          ],
+          "weapon": "whip",
+          "tip": [
+            40.5,
+            61.0
+          ]
+        },
+        {
+          "hand": [
+            61.0,
+            30.5
+          ],
+          "weapon": "whip",
+          "tip": [
+            31.5,
+            35.0
+          ]
+        },
+        {
+          "hand": [
+            69.0,
+            33.0
+          ],
+          "weapon": "whip",
+          "tip": [
+            38.0,
+            27.5
+          ]
+        },
+        {
+          "hand": [
+            77.5,
+            39.5
+          ],
+          "weapon": "whip",
+          "tip": [
+            119.5,
+            44.5
+          ]
+        },
+        {
+          "hand": [
+            79.0,
+            41.0
+          ],
+          "weapon": "whip",
+          "tip": [
+            124.0,
+            42.5
+          ]
+        },
+        {
+          "hand": [
+            79.0,
+            41.5
+          ],
+          "weapon": "whip",
+          "tip": [
+            123.5,
+            44.0
+          ]
+        },
+        {
+          "hand": [
+            76.0,
+            43.5
+          ],
+          "weapon": "whip",
+          "tip": [
+            105.5,
+            59.5
+          ]
+        },
+        {
+          "hand": [
+            71.5,
+            47.0
+          ],
+          "weapon": "whip",
+          "tip": [
+            78.5,
+            69.0
+          ]
+        }
+      ]
     },
     "attack_whip_crouch": {
-      "frames": 5,
-      "fps": 20,
+      "frames": 8,
+      "fps": 60.0,
       "loop": false,
-      "row": 9
+      "row": 9,
+      "ticks": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        1
+      ],
+      "total_ticks": 15,
+      "weapon": [
+        {
+          "hand": [
+            59.0,
+            48.5
+          ],
+          "weapon": "whip",
+          "tip": [
+            42.3,
+            71.0
+          ]
+        },
+        {
+          "hand": [
+            62.5,
+            43.5
+          ],
+          "weapon": "whip",
+          "tip": [
+            31.5,
+            48.0
+          ]
+        },
+        {
+          "hand": [
+            70.5,
+            46.0
+          ],
+          "weapon": "whip",
+          "tip": [
+            38.0,
+            40.5
+          ]
+        },
+        {
+          "hand": [
+            79.0,
+            52.5
+          ],
+          "weapon": "whip",
+          "tip": [
+            119.5,
+            57.5
+          ]
+        },
+        {
+          "hand": [
+            79.0,
+            54.0
+          ],
+          "weapon": "whip",
+          "tip": [
+            124.0,
+            55.5
+          ]
+        },
+        {
+          "hand": [
+            79.0,
+            54.5
+          ],
+          "weapon": "whip",
+          "tip": [
+            123.5,
+            57.0
+          ]
+        },
+        {
+          "hand": [
+            77.5,
+            56.5
+          ],
+          "weapon": "whip",
+          "tip": [
+            106.4,
+            71.0
+          ]
+        },
+        {
+          "hand": [
+            73.0,
+            60.0
+          ],
+          "weapon": "whip",
+          "tip": [
+            85.1,
+            71.0
+          ]
+        }
+      ]
     },
     "attack_whip_air": {
-      "frames": 5,
-      "fps": 20,
+      "frames": 8,
+      "fps": 60.0,
       "loop": false,
-      "row": 10
+      "row": 10,
+      "ticks": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        1
+      ],
+      "total_ticks": 15,
+      "weapon": [
+        {
+          "hand": [
+            57.5,
+            32.5
+          ],
+          "weapon": "whip",
+          "tip": [
+            40.5,
+            58.0
+          ]
+        },
+        {
+          "hand": [
+            61.0,
+            27.5
+          ],
+          "weapon": "whip",
+          "tip": [
+            31.5,
+            32.0
+          ]
+        },
+        {
+          "hand": [
+            69.0,
+            30.0
+          ],
+          "weapon": "whip",
+          "tip": [
+            38.0,
+            24.5
+          ]
+        },
+        {
+          "hand": [
+            77.5,
+            39.5
+          ],
+          "weapon": "whip",
+          "tip": [
+            119.5,
+            44.5
+          ]
+        },
+        {
+          "hand": [
+            79.0,
+            41.0
+          ],
+          "weapon": "whip",
+          "tip": [
+            124.0,
+            42.5
+          ]
+        },
+        {
+          "hand": [
+            79.0,
+            41.5
+          ],
+          "weapon": "whip",
+          "tip": [
+            123.5,
+            44.0
+          ]
+        },
+        {
+          "hand": [
+            76.0,
+            41.5
+          ],
+          "weapon": "whip",
+          "tip": [
+            105.5,
+            57.5
+          ]
+        },
+        {
+          "hand": [
+            71.5,
+            44.0
+          ],
+          "weapon": "whip",
+          "tip": [
+            78.5,
+            66.0
+          ]
+        }
+      ]
     },
     "throw": {
-      "frames": 3,
-      "fps": 16,
+      "frames": 4,
+      "fps": 60.0,
       "loop": false,
-      "row": 11
+      "row": 11,
+      "ticks": [
+        4,
+        3,
+        2,
+        2
+      ],
+      "total_ticks": 11,
+      "weapon": [
+        {
+          "hand": [
+            55.0,
+            40.0
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            75.0,
+            41.0
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            74.0,
+            46.0
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            66.0,
+            51.0
+          ],
+          "weapon": "none"
+        }
+      ]
     },
     "backdash": {
-      "frames": 2,
-      "fps": 10,
-      "loop": true,
-      "row": 12
+      "frames": 5,
+      "fps": 60.0,
+      "loop": false,
+      "row": 12,
+      "ticks": [
+        2,
+        4,
+        4,
+        4,
+        4
+      ],
+      "total_ticks": 18,
+      "weapon": [
+        {
+          "hand": [
+            70.0,
+            52.5
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            70.0,
+            52.5
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            70.0,
+            52.5
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            66.0,
+            53.5
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            63.0,
+            54.0
+          ],
+          "weapon": "none"
+        }
+      ]
     },
     "hurt": {
-      "frames": 1,
-      "fps": 1,
+      "frames": 3,
+      "fps": 60.0,
       "loop": false,
-      "row": 13
+      "row": 13,
+      "ticks": [
+        2,
+        4,
+        8
+      ],
+      "total_ticks": 14,
+      "weapon": [
+        {
+          "hand": [
+            70.5,
+            43.5
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            70.0,
+            39.0
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            69.0,
+            46.0
+          ],
+          "weapon": "none"
+        }
+      ]
     },
     "death": {
-      "frames": 2,
-      "fps": 3,
+      "frames": 10,
+      "fps": 60.0,
       "loop": false,
-      "row": 14
+      "row": 14,
+      "ticks": [
+        6,
+        6,
+        7,
+        7,
+        18,
+        5,
+        5,
+        6,
+        8,
+        16
+      ],
+      "total_ticks": 84,
+      "weapon": [
+        {
+          "hand": [
+            66.0,
+            47.0
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            65.5,
+            50.0
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            65.5,
+            55.0
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            66.0,
+            59.0
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            66.0,
+            61.0
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            70.5,
+            61.0
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            84.5,
+            60.0
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            79.5,
+            73.0
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            81.0,
+            74.0
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            81.5,
+            74.5
+          ],
+          "weapon": "none"
+        }
+      ]
+    },
+    "land": {
+      "frames": 3,
+      "fps": 60.0,
+      "loop": false,
+      "row": 15,
+      "ticks": [
+        3,
+        4,
+        5
+      ],
+      "total_ticks": 12,
+      "weapon": [
+        {
+          "hand": [
+            62.5,
+            57.0
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            62.0,
+            56.0
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            61.5,
+            55.0
+          ],
+          "weapon": "none"
+        }
+      ]
+    },
+    "run_start": {
+      "frames": 4,
+      "fps": 60.0,
+      "loop": false,
+      "row": 16,
+      "ticks": [
+        3,
+        3,
+        3,
+        3
+      ],
+      "total_ticks": 12,
+      "weapon": [
+        {
+          "hand": [
+            57.5,
+            51.5
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            60.5,
+            51.5
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            59.5,
+            51.0
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            58.0,
+            49.5
+          ],
+          "weapon": "none"
+        }
+      ]
+    },
+    "skid": {
+      "frames": 6,
+      "fps": 60.0,
+      "loop": false,
+      "row": 17,
+      "ticks": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4
+      ],
+      "total_ticks": 24,
+      "weapon": [
+        {
+          "hand": [
+            56.5,
+            50.0
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            56.5,
+            50.0
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            58.0,
+            51.5
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            59.0,
+            52.5
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            60.0,
+            53.5
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            61.0,
+            54.5
+          ],
+          "weapon": "none"
+        }
+      ]
+    },
+    "apex": {
+      "frames": 4,
+      "fps": 60.0,
+      "loop": false,
+      "row": 18,
+      "ticks": [
+        4,
+        4,
+        4,
+        4
+      ],
+      "total_ticks": 16,
+      "weapon": [
+        {
+          "hand": [
+            58.0,
+            47.0
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            58.0,
+            47.0
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            57.5,
+            49.5
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            52.5,
+            42.5
+          ],
+          "weapon": "none"
+        }
+      ]
+    },
+    "double_jump": {
+      "frames": 6,
+      "fps": 60.0,
+      "loop": false,
+      "row": 19,
+      "ticks": [
+        3,
+        3,
+        3,
+        3,
+        3,
+        3
+      ],
+      "total_ticks": 18,
+      "weapon": [
+        {
+          "hand": [
+            69.0,
+            49.5
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            64.5,
+            52.5
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            59.5,
+            50.0
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            59.0,
+            44.5
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            63.5,
+            41.5
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            68.5,
+            44.0
+          ],
+          "weapon": "none"
+        }
+      ]
+    },
+    "turn": {
+      "frames": 3,
+      "fps": 60.0,
+      "loop": false,
+      "row": 20,
+      "ticks": [
+        2,
+        2,
+        2
+      ],
+      "total_ticks": 6,
+      "weapon": [
+        {
+          "hand": [
+            58.5,
+            54.0
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            59.5,
+            54.0
+          ],
+          "weapon": "none"
+        },
+        {
+          "hand": [
+            60.5,
+            54.5
+          ],
+          "weapon": "none"
+        }
+      ]
+    }
+  },
+  "attack_windows": {
+    "attack": {
+      "active_frames": [
+        2,
+        4
+      ],
+      "ticks": [
+        3,
+        9,
+        3
+      ]
+    },
+    "attack_whip": {
+      "active_frames": [
+        3,
+        5
+      ],
+      "ticks": [
+        6,
+        6,
+        3
+      ]
+    },
+    "throw": {
+      "spawn_frame": 1,
+      "ticks_before_spawn": 4
     }
   }
 }

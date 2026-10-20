@@ -1,26 +1,64 @@
 {
   "frame_size": [
-    48,
-    48
+    64,
+    64
+  ],
+  "origin": [
+    32,
+    59
   ],
   "animations": {
     "walk": {
-      "frames": 4,
-      "fps": 6,
+      "frames": 6,
+      "fps": 60.0,
       "loop": true,
-      "row": 0
+      "row": 0,
+      "ticks": [
+        6,
+        4,
+        4,
+        6,
+        5,
+        5
+      ],
+      "total_ticks": 30
     },
     "attack": {
-      "frames": 3,
-      "fps": 8,
+      "frames": 6,
+      "fps": 60.0,
       "loop": false,
-      "row": 1
+      "row": 1,
+      "ticks": [
+        4,
+        5,
+        6,
+        2,
+        3,
+        3
+      ],
+      "total_ticks": 23
     },
     "hurt": {
-      "frames": 1,
-      "fps": 1,
+      "frames": 2,
+      "fps": 60.0,
       "loop": false,
-      "row": 2
+      "row": 2,
+      "ticks": [
+        3,
+        24
+      ],
+      "total_ticks": 27
+    },
+    "idle": {
+      "frames": 2,
+      "fps": 60.0,
+      "loop": true,
+      "row": 3,
+      "ticks": [
+        12,
+        12
+      ],
+      "total_ticks": 24
     }
   }
 }

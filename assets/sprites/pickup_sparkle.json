@@ -1,0 +1,24 @@
+{
+  "frame_size": [
+    9,
+    9
+  ],
+  "origin": [
+    4,
+    4
+  ],
+  "animations": {
+    "default": {
+      "frames": 3,
+      "fps": 60.0,
+      "loop": false,
+      "row": 0,
+      "ticks": [
+        3,
+        4,
+        4
+      ],
+      "total_ticks": 11
+    }
+  }
+}

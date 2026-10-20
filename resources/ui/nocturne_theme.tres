@@ -1,7 +1,9 @@
-[gd_resource type="Theme" format=3]
+[gd_resource type="Theme" format=3 uid="uid://by3by81kbn6nx"]
 
-[ext_resource type="FontFile" path="res://assets/fonts/nocturne_pixel.fnt" id="1_font"]
+[ext_resource type="FontFile" uid="uid://ct7sacxkx4y5i" path="res://assets/fonts/nocturne_pixel.fnt" id="1_font"]
 
 [resource]
 default_font = ExtResource("1_font")
 default_font_size = 8
+Label/colors/font_color = Color(0.94, 0.94, 0.97, 1)
+Label/constants/line_spacing = 1

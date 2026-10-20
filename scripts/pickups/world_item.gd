@@ -36,6 +36,8 @@ enum Grant {
 @export var bob_height: float = 2.0
 @export var bob_speed: float = 2.4
 @export var collect_sfx: StringName = &"heart_pickup"
+## Little additive star left behind when it is taken (visual only).
+@export var collect_effect_scene: PackedScene = preload("res://scenes/fx/pickup_sparkle.tscn")
 
 @onready var sprite: Sprite2D = $Sprite
 
@@ -57,6 +59,7 @@ func _ready() -> void:
 	elif item != null and sprite.texture == null:
 		sprite.texture = item.icon
 	body_entered.connect(_on_body_entered)
+	_desync_effects()
 
 
 func _process(delta: float) -> void:
@@ -73,8 +76,32 @@ func _on_body_entered(body: Node2D) -> void:
 	# item must already count as taken by then.
 	GameManager.collect_world_item(world_item_id)
 	Audio.play_sfx(collect_sfx)
+	_spawn_collect_effect()
 	Events.notice_posted.emit(_apply_grant())
 	queue_free()
+
+
+func _spawn_collect_effect() -> void:
+	if collect_effect_scene == null or get_parent() == null:
+		return
+	var fx := collect_effect_scene.instantiate() as Node2D
+	if fx == null:
+		return
+	fx.position = position + Vector2(0.0, -9.0)
+	# Deferred: we are inside a physics callback.
+	get_parent().add_child.call_deferred(fx)
+
+
+## Start the aura pulse and the glint at their own random moments (visual
+## only, private generator), so world items in one room never glint in step.
+func _desync_effects() -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.randomize()
+	var paths: Array[NodePath] = [^"Aura", ^"Glint"]
+	for path: NodePath in paths:
+		var anim := get_node_or_null(path) as AnimatedSprite2D
+		if anim != null:
+			AnimPhase.randomize_phase(anim, rng)
 
 
 ## Hand over the goods and return the line the HUD should show.
@@ -93,4 +120,5 @@ func _apply_grant() -> String:
 		var slot: int = GameManager.default_slot_for(item)
 		if slot != -1 and GameManager.get_equipped(slot) == null:
 			GameManager.equip(slot, item)
-	return item.display_name.to_upper()
+	# The item name as authored (mixed case), like the menus and the HUD.
+	return item.display_name

@@ -76,6 +76,17 @@ func get_knockback_direction(target_position: Vector2) -> float:
 	return 1.0 if dx >= 0.0 else -1.0
 
 
+## Where a strike visibly lands: the centre of the first collision shape in
+## global space. A melee hitbox sits on the wielder's feet with its shape
+## offset to the blade, so its own origin is a poor place for a hit spark.
+## Visual only; knockback still uses the hitbox origin.
+func get_strike_point() -> Vector2:
+	for child: Node in get_children():
+		if child is CollisionShape2D or child is CollisionPolygon2D:
+			return (child as Node2D).global_position
+	return global_position
+
+
 func _set_shapes_disabled(disabled: bool) -> void:
 	for child: Node in get_children():
 		if child is CollisionShape2D or child is CollisionPolygon2D:

@@ -8,9 +8,10 @@
 [ext_resource type="Script" path="res://scripts/components/hitbox.gd" id="6_hitbox"]
 [ext_resource type="PackedScene" path="res://scenes/pickups/heart_small.tscn" id="7_heart_small"]
 [ext_resource type="PackedScene" path="res://scenes/pickups/heart_big.tscn" id="8_heart_big"]
-[ext_resource type="PackedScene" path="res://scenes/fx/death_flame.tscn" id="9_death"]
+[ext_resource type="PackedScene" path="res://scenes/fx/fire_pop_large.tscn" id="9_death"]
 [ext_resource type="PackedScene" path="res://scenes/fx/hit_spark.tscn" id="10_spark"]
 [ext_resource type="PackedScene" path="res://scenes/pickups/gold.tscn" id="11_gold"]
+[ext_resource type="PackedScene" path="res://scenes/fx/hit_spark_burst.tscn" id="12_kill_spark"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_flash"]
 resource_local_to_scene = true
@@ -47,6 +48,9 @@ gold_scene = ExtResource("11_gold")
 experience = 3
 death_effect_scene = ExtResource("9_death")
 hit_effect_scene = ExtResource("10_spark")
+kill_effect_scene = ExtResource("12_kill_spark")
+damage_number_offset = Vector2(0, -24)
+wing_bit_colors = PackedColorArray(0.5882353, 0.36862746, 0.5254902, 1, 0.6666667, 0.57254905, 0.6901961, 1, 0.9254902, 0.4627451, 0.14117648, 1, 0.47843137, 0.3137255, 0.5019608, 1)
 
 [node name="Sprite" type="AnimatedSprite2D" parent="."]
 material = SubResource("ShaderMaterial_flash")

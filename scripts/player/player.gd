@@ -21,6 +21,14 @@
 ##   or the classic Up + Attack input
 ## - Knockback, stun and blinking invincibility frames when hurt
 ##
+## [b]Presentation[/b][br]
+## On top of each state's own animation, a small visual-only selector plays
+## SotN-style lead-ins and follow-throughs ("flourishes"): run_start, skid,
+## turn and land on the ground, apex and the drawn double_jump in the air.
+## They never change state, velocity or what input is accepted, and they are
+## dropped the moment they stop fitting what the player is doing. Dust, the
+## double-jump ring, the backdash afterimages and the death mist ride along.
+##
 ## [b]What it does not own[/b][br]
 ## Levels, stats, gold, hearts, the inventory and what is equipped all live in
 ## [GameManager], because this node is thrown away and rebuilt on every room
@@ -40,6 +48,34 @@ const CROUCH_SHAPE_SIZE: Vector2 = Vector2(10.0, 22.0)
 ## The hurtbox is a little narrower than the body so grazes do not register.
 const STAND_HURT_SIZE: Vector2 = Vector2(10.0, 30.0)
 const CROUCH_HURT_SIZE: Vector2 = Vector2(10.0, 19.0)
+
+# Thresholds for the visual-only flourishes (px/s). None affects movement.
+## Starting to run from slower than this plays the run_start lead-in.
+const RUN_START_MAX_SPEED: float = 40.0
+## Letting go while running at least this fast plays the skid.
+const SKID_MIN_SPEED: float = 60.0
+## Rising slower than this (vy above it) turns the jump over through apex.
+const APEX_RISE_SPEED: float = -80.0
+## Landing at least this fast plays the knee-absorb land / kicks up dust.
+const LAND_ANIM_MIN_FALL: float = 120.0
+const LAND_DUST_MIN_FALL: float = 200.0
+
+# The hurt flash and i-frame blink (visual only), in 60 Hz ticks of game time.
+const HIT_FLASH_SHADER: Shader = preload("res://shaders/hit_flash.gdshader")
+const FLASH_WHITE: Color = Color(1.0, 1.0, 1.0)
+const FLASH_CRIMSON: Color = Color(0.769, 0.243, 0.259)
+const FLASH_WHITE_TICKS: float = 2.0
+const FLASH_CRIMSON_TICKS: float = 2.0
+## hit_flash.gdshader's solid flash_mode. Vesper is a dark sprite, so both
+## steps are solid blends that keep only his contour and darkest lines: a tint
+## would sink his indigo coat into brown-black.
+const FLASH_MODE_SOLID: int = 0
+const FLASH_OUTLINE_LUMA: float = 0.08
+## The blink starts once the impact flash is over, then alternates 50% and
+## normal every [constant BLINK_TICKS].
+const BLINK_START_TICKS: float = FLASH_WHITE_TICKS + FLASH_CRIMSON_TICKS
+const BLINK_TICKS: float = 2.0
+const BLINK_ALPHA: float = 0.5
 
 @export_group("Movement")
 @export var run_speed: float = 105.0
@@ -74,6 +110,18 @@ const CROUCH_HURT_SIZE: Vector2 = Vector2(10.0, 19.0)
 @export var hurt_knockback: Vector2 = Vector2(110.0, -170.0)
 @export var hurt_stun_time: float = 0.35
 @export var invincibility_time: float = 1.2
+
+@export_group("Effects")
+## Where damage numbers appear, relative to the feet (just over the head).
+@export var damage_number_offset: Vector2 = Vector2(0, -52)
+## Kicked up at the back foot on a run start, at the front foot on a skid.
+@export var dust_puff_scene: PackedScene = preload("res://scenes/fx/dust_puff.tscn")
+## Spread under the feet on a hard landing.
+@export var land_dust_scene: PackedScene = preload("res://scenes/fx/land_dust.tscn")
+## The ring under the feet on a double jump.
+@export var double_jump_ring_scene: PackedScene = preload("res://scenes/fx/double_jump_ring.tscn")
+## Rising crimson mist the body dissolves into once the death animation ends.
+@export var death_mist_scene: PackedScene = preload("res://scenes/fx/death_mist.tscn")
 
 @onready var sprite: AnimatedSprite2D = $Sprite
 @onready var body_shape: CollisionShape2D = $BodyShape
@@ -110,6 +158,8 @@ var _drop_through_timer: float = 0.0
 var _mp_regen_accumulator: float = 0.0
 var _has_double_jumped: bool = false
 var _is_crouch_attack: bool = false
+## Set by _exit_state(ATTACK) for the one _enter_state that follows it.
+var _leaving_crouch_attack: bool = false
 var _was_on_floor: bool = true
 var _thrown_this_state: bool = false
 ## The hand mid-swing. Held separately from the equipped weapon so an equip
@@ -118,6 +168,21 @@ var _swinging: WeaponData
 var _active_projectiles: Array[Node] = []
 ## Guards the two-way mirror between [HealthComponent] and GameManager.current_hp.
 var _syncing_health: bool = false
+## The visual-only lead-in / follow-through playing on top of the state's own
+## animation (&"" = none). See the Presentation section of the class docs.
+var _flourish: StringName = &""
+## Set by _start_jump(): the next "jump" plays from its take-off frame. A rise
+## that resumes after an aerial swing starts on the held rise pose instead.
+var _jump_takeoff: bool = false
+## Vertical speed on the last airborne tick, i.e. how hard we hit the floor.
+var _last_air_vy: float = 0.0
+## Ghost copies of the sprite during the backdash and the double jump.
+var _afterimages: AfterimageTrail
+## The sprite's hit_flash material (made at runtime) and the tween driving it.
+var _flash_material: ShaderMaterial
+var _flash_tween: Tween
+## Game-time ticks since the current invincibility began (drives the blink).
+var _blink_clock: float = 0.0
 
 
 # ---------------------------------------------------------------------------
@@ -131,6 +196,12 @@ func _ready() -> void:
 	health.health_changed.connect(_on_health_changed)
 	sprite.frame_changed.connect(_on_sprite_frame_changed)
 	sprite.animation_finished.connect(_on_sprite_animation_finished)
+	_afterimages = AfterimageTrail.new()
+	_afterimages.name = &"Afterimages"
+	_afterimages.source = sprite
+	_afterimages.trail_z = z_index - 1
+	add_child(_afterimages)
+	_setup_flash_material()
 	Events.player_equipment_changed.connect(_on_equipment_changed)
 	Events.player_stats_changed.connect(_sync_from_game_state)
 	GameManager.seed_starting_loadout(starting_loadout)
@@ -159,15 +230,27 @@ func _physics_process(delta: float) -> void:
 			_state_hurt(delta)
 		State.DEAD:
 			_state_dead(delta)
+	_afterimages.emitting = state == State.BACKDASH \
+		or (sprite.animation == &"double_jump" and sprite.is_playing())
+	# Visual only: the speed we are about to hit the floor with, whatever the
+	# state (an aerial swing or throw can be the one that lands).
+	if not is_on_floor():
+		_last_air_vy = velocity.y
 	move_and_slide()
 	_after_move()
 
 
-func _process(_delta: float) -> void:
-	# Blink while invincible (classic i-frame feedback).
+func _process(delta: float) -> void:
+	# Blink while invincible (classic i-frame feedback): after the impact
+	# flash, alternate 50% and normal every 2 ticks of game time, so hit-stop
+	# and pause hold it like everything else.
 	if hurtbox.is_invincible and state != State.DEAD:
-		sprite.modulate.a = 0.35 if int(Time.get_ticks_msec() / 60.0) % 2 == 0 else 1.0
+		_blink_clock += delta * 60.0
+		var phase: int = int((_blink_clock - BLINK_START_TICKS) / BLINK_TICKS)
+		var dimmed: bool = _blink_clock >= BLINK_START_TICKS and phase % 2 == 0
+		sprite.modulate.a = BLINK_ALPHA if dimmed else 1.0
 	else:
+		_blink_clock = 0.0
 		sprite.modulate.a = 1.0
 
 
@@ -211,14 +294,14 @@ func _state_grounded(delta: float) -> void:
 		_change_state(State.CROUCH)
 		return
 
+	var was_running: bool = state == State.RUN
+	var speed_before: float = absf(velocity.x)
+	var facing_before: int = facing
 	_update_facing(input_x)
 	_move_horizontal(input_x * run_speed, ground_acceleration if input_x != 0.0 else ground_friction, delta)
-	if absf(velocity.x) > 5.0 or input_x != 0.0:
-		_set_state_silently(State.RUN)
-		_play(&"run")
-	else:
-		_set_state_silently(State.IDLE)
-		_play(&"idle")
+	var moving: bool = absf(velocity.x) > 5.0 or input_x != 0.0
+	_set_state_silently(State.RUN if moving else State.IDLE)
+	_animate_grounded(moving, input_x, was_running, speed_before, facing != facing_before)
 
 
 func _state_air(delta: float) -> void:
@@ -240,7 +323,7 @@ func _state_air(delta: float) -> void:
 		if can_double_jump() and not _has_double_jumped:
 			_has_double_jumped = true
 			_start_jump(double_jump_velocity)
-			_play_somersault()
+			_play_double_jump()
 			return
 	if _try_attack_or_throw():
 		return
@@ -249,7 +332,7 @@ func _state_air(delta: float) -> void:
 	_move_horizontal(input_x * run_speed, air_acceleration, delta)
 	if state == State.JUMP and velocity.y >= 0.0:
 		_change_state(State.FALL)
-	_play(&"jump" if velocity.y < 0.0 else &"fall")
+	_animate_air()
 
 
 func _state_crouch(delta: float) -> void:
@@ -336,13 +419,20 @@ func _enter_state(new_state: State) -> void:
 	match new_state:
 		State.CROUCH:
 			_set_crouch_shape(true)
+			# Out of a crouching swing the hero is already kneeling: start on
+			# the held pose instead of replaying the stand-to-kneel crouch-down.
+			if _leaving_crouch_attack:
+				_play(&"crouch", true)
+				sprite.frame = sprite.sprite_frames.get_frame_count(&"crouch") - 1
 		State.ATTACK:
+			_jump_takeoff = false
 			_is_crouch_attack = is_on_floor() and _is_holding_down()
 			_set_crouch_shape(_is_crouch_attack)
 			sprite.speed_scale = _swinging.speed_scale if _swinging else 1.0
 			_play(_attack_animation(), true)
 			Audio.play_sfx(_swinging.swing_sfx if _swinging else &"sword_swing", 0.08)
 		State.THROW:
+			_jump_takeoff = false
 			_thrown_this_state = false
 			_play(&"throw", true)
 		State.BACKDASH:
@@ -352,6 +442,7 @@ func _enter_state(new_state: State) -> void:
 			_play(&"hurt", true)
 		State.DEAD:
 			_play(&"death", true)
+	_leaving_crouch_attack = false
 
 
 func _exit_state(old_state: State) -> void:
@@ -363,6 +454,7 @@ func _exit_state(old_state: State) -> void:
 			sprite.speed_scale = 1.0
 			_set_crouch_shape(false)
 			_swinging = null
+			_leaving_crouch_attack = _is_crouch_attack
 
 
 ## Actions available from any grounded, non-crouching state.
@@ -455,6 +547,7 @@ func _start_jump(v: float) -> void:
 	velocity.y = v
 	_coyote_timer = 0.0
 	_jump_buffer_timer = 0.0
+	_jump_takeoff = true
 	Audio.play_sfx(&"jump", 0.1)
 	# Force a re-enter so the jump arc logic resets even when already airborne.
 	if state == State.JUMP:
@@ -467,6 +560,21 @@ func _land() -> void:
 	_has_double_jumped = false
 	sprite.rotation = 0.0
 	_change_state(State.IDLE)
+	# Visual only; the grounded state takes over input on the very next tick.
+	# (The landing dust is kicked up in _after_move(), on the touchdown tick.)
+	if _last_air_vy >= LAND_ANIM_MIN_FALL and _move_input() == 0.0:
+		_start_flourish(&"land")
+	_last_air_vy = 0.0
+
+
+## The double jump's look: the drawn somersault when the art has one (the
+## old rotation tween otherwise), plus the ring under the feet.
+func _play_double_jump() -> void:
+	_spawn_fx(double_jump_ring_scene, global_position)
+	if _start_flourish(&"double_jump"):
+		_jump_takeoff = false
+	else:
+		_play_somersault()
 
 
 func _play_somersault() -> void:
@@ -510,6 +618,14 @@ func _after_move() -> void:
 	var on_floor: bool = is_on_floor()
 	if on_floor and not _was_on_floor:
 		Audio.play_sfx(&"land", 0.1, -4.0)
+		# Visual only, in every state: a hard landing out of an aerial swing
+		# kicks up dust too. _land() reads the same speed for its flourish.
+		if _last_air_vy >= LAND_DUST_MIN_FALL:
+			_spawn_fx(land_dust_scene, global_position)
+	elif on_floor:
+		# Second grounded tick: _land() (if it ran) has read the speed, so a
+		# landing that ended inside a swing leaves nothing stale behind.
+		_last_air_vy = 0.0
 	_was_on_floor = on_floor
 
 
@@ -577,6 +693,8 @@ func _on_sprite_animation_finished() -> void:
 			_change_state(State.CROUCH if _is_holding_down() else State.IDLE)
 		else:
 			_change_state(State.FALL)
+	elif state == State.DEAD and sprite.animation == &"death":
+		_dissolve_body()
 
 
 ## Attack animation for the swinging weapon in the current stance. Weapons
@@ -657,7 +775,8 @@ func _on_hit_received(hitbox: Hitbox) -> void:
 		return
 	var dealt: int = health.take_damage(
 		Combat.compute_damage(hitbox.damage, hitbox.attack_power, GameManager.get_defense()))
-	Events.damage_dealt.emit(dealt, global_position + Vector2(0, -40), true)
+	Events.damage_dealt.emit(dealt, global_position + damage_number_offset, true)
+	_impact_flash()
 	if health.is_dead:
 		_die()
 		return
@@ -714,6 +833,146 @@ func _play(anim: StringName, restart: bool = false) -> void:
 		sprite.play(anim)
 		if restart:
 			sprite.frame = 0
+
+
+## Play a visual-only flourish if the art ships it. Returns false (and plays
+## nothing) when it does not, or when it is already the one playing.
+func _start_flourish(anim: StringName) -> bool:
+	if sprite.sprite_frames == null or not sprite.sprite_frames.has_animation(anim):
+		return false
+	if _flourish_playing(anim):
+		return false
+	_flourish = anim
+	sprite.rotation = 0.0
+	_play(anim, true)
+	return true
+
+
+## True while [param anim] is the current flourish and still on screen.
+func _flourish_playing(anim: StringName) -> bool:
+	return _flourish == anim and sprite.animation == anim and sprite.is_playing()
+
+
+## Grounded animation: idle / run, with the lead-ins on top. Runs after the
+## state has been decided for this tick, so it only ever chooses what is drawn.
+func _animate_grounded(moving: bool, input_x: float, was_running: bool, speed_before: float,
+		turned: bool) -> void:
+	if turned and not was_running:
+		_start_flourish(&"turn")
+	elif moving and not was_running and speed_before < RUN_START_MAX_SPEED \
+			and not _flourish_playing(&"turn"):
+		_start_run_start()
+	elif input_x == 0.0 and was_running and speed_before >= SKID_MIN_SPEED:
+		if _start_flourish(&"skid"):
+			# Braking sprays the dust ahead, so it is kicked the other way.
+			_spawn_fx(dust_puff_scene, global_position + Vector2(8.0 * facing, 0.0), facing > 0)
+	if _flourish_playing(_flourish):
+		match _flourish:
+			&"turn":
+				# The pivot keeps both soles planted, so it only holds while the
+				# body is still nearly at rest. Once the run carries him, the
+				# push-off takes over and the feet never skate.
+				if absf(velocity.x) < RUN_START_MAX_SPEED:
+					return
+				if moving and input_x != 0.0 and _start_run_start():
+					return
+			&"run_start":
+				if moving and input_x != 0.0:
+					return
+			&"skid", &"land":
+				if input_x == 0.0:
+					return
+	_flourish = &""
+	_play(&"run" if moving else &"idle")
+
+
+## The run_start lead-in, with its push-off dust at the back foot. Returns
+## false when the art does not ship it (or it is already playing).
+func _start_run_start() -> bool:
+	if not _start_flourish(&"run_start"):
+		return false
+	_spawn_fx(dust_puff_scene, global_position + Vector2(-6.0 * facing, 0.0), facing < 0)
+	return true
+
+
+## Airborne animation: jump (rise), apex (turnover), fall, or the drawn
+## double_jump somersault while it lasts.
+func _animate_air() -> void:
+	if _flourish_playing(&"double_jump"):
+		return
+	if velocity.y < APEX_RISE_SPEED:
+		if sprite.animation != &"jump":
+			_play(&"jump", true)
+			if not _jump_takeoff:
+				sprite.frame = sprite.sprite_frames.get_frame_count(&"jump") - 1
+		_jump_takeoff = false
+		_flourish = &""
+		return
+	if _flourish_playing(&"apex"):
+		return
+	if (sprite.animation == &"jump" or sprite.animation == &"double_jump") and _start_flourish(&"apex"):
+		return
+	_flourish = &""
+	_play(&"fall")
+
+
+## Spawn a fire-and-forget effect into the room at [param at].
+func _spawn_fx(scene: PackedScene, at: Vector2, flip: bool = false) -> void:
+	if scene == null or get_parent() == null:
+		return
+	var fx := scene.instantiate() as Node2D
+	if fx == null:
+		return
+	var anim := fx as AnimatedSprite2D
+	if anim != null:
+		anim.flip_h = flip
+	get_parent().add_child(fx)
+	fx.global_position = at
+
+
+## Give the sprite its own hit_flash material for the hurt flash, unless the
+## scene already set one. Visual only: modulate stays the i-frame blink's and
+## self_modulate the death fade's.
+func _setup_flash_material() -> void:
+	_flash_material = sprite.material as ShaderMaterial
+	if sprite.material == null:
+		_flash_material = ShaderMaterial.new()
+		_flash_material.shader = HIT_FLASH_SHADER
+		sprite.material = _flash_material
+	if _flash_material != null:
+		_flash_material.set_shader_parameter(&"outline_luma", FLASH_OUTLINE_LUMA)
+		_flash_material.set_shader_parameter(&"keep_edges", true)
+
+
+## The SotN impact flash when hurt: solid white, then crimson at 60%, then
+## normal, the contour kept dark throughout. Game-time ticks, so hit-stop
+## holds the white.
+func _impact_flash() -> void:
+	if _flash_material == null:
+		return
+	if _flash_tween != null and _flash_tween.is_valid():
+		_flash_tween.kill()
+	_set_flash(FLASH_WHITE, 1.0, FLASH_MODE_SOLID)
+	_flash_tween = create_tween()
+	_flash_tween.tween_interval(FLASH_WHITE_TICKS / 60.0)
+	_flash_tween.tween_callback(_set_flash.bind(FLASH_CRIMSON, 0.6, FLASH_MODE_SOLID))
+	_flash_tween.tween_interval(FLASH_CRIMSON_TICKS / 60.0)
+	_flash_tween.tween_callback(_set_flash.bind(FLASH_WHITE, 0.0, FLASH_MODE_SOLID))
+
+
+func _set_flash(color: Color, amount: float, mode: int) -> void:
+	_flash_material.set_shader_parameter(&"flash_color", color)
+	_flash_material.set_shader_parameter(&"flash_amount", amount)
+	_flash_material.set_shader_parameter(&"flash_mode", mode)
+
+
+## After the death animation the body breaks into rising crimson mist. Uses
+## self_modulate, because _process() owns modulate.a for the i-frame blink.
+func _dissolve_body() -> void:
+	_spawn_fx(death_mist_scene, global_position)
+	var tween: Tween = create_tween()
+	tween.tween_property(sprite, "self_modulate", Color(1.0, 0.45, 0.5, 0.0), 0.6) \
+		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 
 
 func _on_health_changed(current: int, maximum: int) -> void:

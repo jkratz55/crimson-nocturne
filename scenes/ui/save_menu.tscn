@@ -1,8 +1,10 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/save_menu.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://assets/ui/menu_frame.png" id="2_frame"]
+[ext_resource type="Texture2D" path="res://assets/ui/window_save.png" id="2_frame"]
 [ext_resource type="Texture2D" path="res://assets/ui/cursor.png" id="3_cursor"]
+[ext_resource type="FontFile" path="res://assets/fonts/nocturne_title.fnt" id="4_title_font"]
+[ext_resource type="Script" path="res://scripts/ui/selection_bar.gd" id="90_selection_bar"]
 
 [node name="SaveMenu" type="CanvasLayer"]
 process_mode = 3
@@ -28,64 +30,69 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-color = Color(0.02, 0.015, 0.045, 0.8)
+color = Color(0.016, 0.012, 0.04, 0.8)
 
 [node name="Panel" type="NinePatchRect" parent="Root"]
 layout_mode = 0
 offset_left = 52.0
-offset_top = 44.0
+offset_top = 40.0
 offset_right = 332.0
-offset_bottom = 172.0
+offset_bottom = 176.0
 mouse_filter = 2
 texture = ExtResource("2_frame")
-patch_margin_left = 14
-patch_margin_top = 14
-patch_margin_right = 14
-patch_margin_bottom = 14
+patch_margin_left = 6
+patch_margin_top = 6
+patch_margin_right = 6
+patch_margin_bottom = 6
 
 [node name="Title" type="Label" parent="Root/Panel"]
 layout_mode = 0
-offset_top = 9.0
+offset_top = 5.0
 offset_right = 280.0
-offset_bottom = 19.0
-theme_override_colors/font_color = Color(0.94, 0.78, 0.36, 1)
+offset_bottom = 21.0
+theme_override_colors/font_color = Color(0.91, 0.77, 0.43, 1)
+theme_override_fonts/font = ExtResource("4_title_font")
+theme_override_font_sizes/font_size = 16
 text = "REST AND RECORD"
 horizontal_alignment = 1
 
-[node name="Rule" type="ColorRect" parent="Root/Panel"]
+[node name="SaveBar" type="ColorRect" parent="Root/Panel"]
+script = ExtResource("90_selection_bar")
+unique_name_in_owner = true
+visible = false
 layout_mode = 0
-offset_left = 16.0
-offset_top = 24.0
-offset_right = 264.0
-offset_bottom = 25.0
+offset_left = 14.0
+offset_top = 32.0
+offset_right = 266.0
+offset_bottom = 54.0
 mouse_filter = 2
-color = Color(0.59, 0.41, 0.16, 1)
+color = Color(0.25, 0.016, 0.055, 1)
 
 [node name="SlotList" type="VBoxContainer" parent="Root/Panel"]
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 18.0
-offset_top = 30.0
+offset_top = 32.0
 offset_right = 262.0
-offset_bottom = 96.0
+offset_bottom = 98.0
 mouse_filter = 2
 theme_override_constants/separation = 0
 
 [node name="Message" type="Label" parent="Root/Panel"]
 unique_name_in_owner = true
 layout_mode = 0
-offset_top = 98.0
+offset_top = 102.0
 offset_right = 280.0
-offset_bottom = 108.0
+offset_bottom = 112.0
 theme_override_colors/font_color = Color(0.72, 0.87, 1, 1)
 horizontal_alignment = 1
 
 [node name="Hint" type="Label" parent="Root/Panel"]
 unique_name_in_owner = true
 layout_mode = 0
-offset_top = 110.0
+offset_top = 119.0
 offset_right = 280.0
-offset_bottom = 120.0
-theme_override_colors/font_color = Color(0.5, 0.48, 0.6, 1)
+offset_bottom = 129.0
+theme_override_colors/font_color = Color(0.56, 0.56, 0.7, 1)
 text = "DOWN PICK   X SAVE   E LEAVE"
 horizontal_alignment = 1

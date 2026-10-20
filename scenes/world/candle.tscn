@@ -1,13 +1,17 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://scripts/world/candle.gd" id="1_script"]
 [ext_resource type="SpriteFrames" path="res://resources/sprite_frames/candle_frames.tres" id="2_frames"]
 [ext_resource type="Script" path="res://scripts/components/hurtbox.gd" id="3_hurtbox"]
 [ext_resource type="PackedScene" path="res://scenes/pickups/heart_small.tscn" id="4_drop"]
-[ext_resource type="PackedScene" path="res://scenes/fx/death_flame.tscn" id="5_break"]
+[ext_resource type="PackedScene" path="res://scenes/fx/candle_break.tscn" id="5_break"]
+[ext_resource type="SpriteFrames" path="res://resources/sprite_frames/candle_halo_frames.tres" id="6_halo"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_hurt"]
 size = Vector2(10, 22)
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_add"]
+blend_mode = 1
 
 [node name="Candle" type="Node2D"]
 z_index = 2
@@ -15,11 +19,17 @@ script = ExtResource("1_script")
 drop_scene = ExtResource("4_drop")
 break_effect_scene = ExtResource("5_break")
 
+[node name="Halo" type="AnimatedSprite2D" parent="."]
+material = SubResource("CanvasItemMaterial_add")
+position = Vector2(0, -27)
+sprite_frames = ExtResource("6_halo")
+autoplay = "default"
+
 [node name="Sprite" type="AnimatedSprite2D" parent="."]
 sprite_frames = ExtResource("2_frames")
 animation = &"burn"
 autoplay = "burn"
-offset = Vector2(0, -16)
+offset = Vector2(0, -20)
 
 [node name="Hurtbox" type="Area2D" parent="."]
 collision_layer = 16

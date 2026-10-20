@@ -1,0 +1,126 @@
+{
+  "frame_size": [
+    40,
+    48
+  ],
+  "origin": [
+    20,
+    32
+  ],
+  "animations": {
+    "default": {
+      "frames": 8,
+      "fps": 60.0,
+      "loop": false,
+      "row": 0,
+      "ticks": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "total_ticks": 16
+    },
+    "smoke": {
+      "frames": 8,
+      "fps": 60.0,
+      "loop": false,
+      "row": 1,
+      "ticks": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "total_ticks": 16
+    },
+    "large": {
+      "frames": 12,
+      "fps": 60.0,
+      "loop": false,
+      "row": 2,
+      "ticks": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "total_ticks": 24
+    },
+    "smoke_large": {
+      "frames": 12,
+      "fps": 60.0,
+      "loop": false,
+      "row": 3,
+      "ticks": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "total_ticks": 24
+    },
+    "default_body": {
+      "frames": 8,
+      "fps": 60.0,
+      "loop": false,
+      "row": 4,
+      "ticks": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "total_ticks": 16
+    },
+    "large_body": {
+      "frames": 12,
+      "fps": 60.0,
+      "loop": false,
+      "row": 5,
+      "ticks": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "total_ticks": 24
+    }
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "frame_size": [
+    48,
+    48
+  ],
+  "origin": [
+    24,
+    24
+  ],
+  "animations": {
+    "default": {
+      "frames": 10,
+      "fps": 60.0,
+      "loop": false,
+      "row": 0,
+      "ticks": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        3,
+        3,
+        3,
+        4
+      ],
+      "total_ticks": 25
+    },
+    "shards": {
+      "frames": 10,
+      "fps": 60.0,
+      "loop": false,
+      "row": 1,
+      "ticks": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        3,
+        3,
+        3,
+        4
+      ],
+      "total_ticks": 25
+    },
+    "default_body": {
+      "frames": 10,
+      "fps": 60.0,
+      "loop": false,
+      "row": 2,
+      "ticks": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        3,
+        3,
+        3,
+        4
+      ],
+      "total_ticks": 25
+    }
+  }
+}

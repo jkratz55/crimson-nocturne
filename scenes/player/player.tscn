@@ -36,7 +36,7 @@ starting_loadout = Array[ExtResource("6_item_data")]([ExtResource("6_sword"), Ex
 sprite_frames = ExtResource("2_frames")
 animation = &"idle"
 autoplay = "idle"
-offset = Vector2(0, -28)
+offset = Vector2(0, -36)
 
 [node name="BodyShape" type="CollisionShape2D" parent="."]
 position = Vector2(0, -17)

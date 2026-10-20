@@ -1,6 +1,6 @@
-[gd_resource type="SpriteFrames" format=3]
+[gd_resource type="SpriteFrames" format=3 uid="uid://dopcfu7tiu371"]
 
-[ext_resource type="Texture2D" path="res://assets/sprites/gold_coin.png" id="1_sheet"]
+[ext_resource type="Texture2D" uid="uid://drega71053fou" path="res://assets/sprites/gold_coin.png" id="1_sheet"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_r0c0"]
 atlas = ExtResource("1_sheet")
@@ -29,25 +29,25 @@ region = Rect2(50, 0, 10, 10)
 [resource]
 animations = [{
 "frames": [{
-"duration": 1.0,
+"duration": 4.0,
 "texture": SubResource("AtlasTexture_r0c0")
 }, {
-"duration": 1.0,
+"duration": 4.0,
 "texture": SubResource("AtlasTexture_r0c1")
 }, {
-"duration": 1.0,
+"duration": 4.0,
 "texture": SubResource("AtlasTexture_r0c2")
 }, {
-"duration": 1.0,
+"duration": 4.0,
 "texture": SubResource("AtlasTexture_r0c3")
 }, {
-"duration": 1.0,
+"duration": 4.0,
 "texture": SubResource("AtlasTexture_r0c4")
 }, {
-"duration": 1.0,
+"duration": 4.0,
 "texture": SubResource("AtlasTexture_r0c5")
 }],
-"loop": true,
+"loop": 1,
 "name": &"spin",
-"speed": 12.0
+"speed": 60.0
 }]

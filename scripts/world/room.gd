@@ -4,6 +4,7 @@
 ## - Define the room's pixel bounds and feed them to the [RoomCamera].
 ## - Start the room's music and announce the area name.
 ## - Spawn floating damage numbers for anything hit inside the room.
+## - Bring the backdrop to life with [AmbientFx] (visual only).
 ##
 ## Future work (full Metroidvania): doors/transitions call into a
 ## map/world manager that swaps rooms and keeps the player instance.
@@ -37,6 +38,9 @@ func _ready() -> void:
 		Audio.play_music(music)
 	Events.damage_dealt.connect(_on_damage_dealt)
 	Events.area_entered.emit.call_deferred(display_name)
+	# Motes in the moon shafts, twinkling stars, a far bat: drawn inside the
+	# backdrop's own Parallax2D layers, never touching gameplay.
+	AmbientFx.populate(self)
 
 
 ## Put the player back on the save point they last used, if it is in this

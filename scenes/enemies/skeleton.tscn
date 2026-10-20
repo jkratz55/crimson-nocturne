@@ -1,4 +1,4 @@
-[gd_scene load_steps=19 format=3]
+[gd_scene load_steps=18 format=3]
 
 [ext_resource type="Script" path="res://scripts/enemies/skeleton.gd" id="1_script"]
 [ext_resource type="SpriteFrames" path="res://resources/sprite_frames/skeleton_frames.tres" id="2_frames"]
@@ -12,6 +12,7 @@
 [ext_resource type="PackedScene" path="res://scenes/fx/death_flame.tscn" id="10_death"]
 [ext_resource type="PackedScene" path="res://scenes/fx/hit_spark.tscn" id="11_spark"]
 [ext_resource type="PackedScene" path="res://scenes/pickups/gold.tscn" id="12_gold"]
+[ext_resource type="PackedScene" path="res://scenes/fx/hit_spark_burst.tscn" id="13_kill_spark"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_flash"]
 resource_local_to_scene = true
@@ -48,12 +49,14 @@ gold_scene = ExtResource("12_gold")
 experience = 6
 death_effect_scene = ExtResource("10_death")
 hit_effect_scene = ExtResource("11_spark")
+kill_effect_scene = ExtResource("13_kill_spark")
+damage_number_offset = Vector2(0, -47)
 
 [node name="Sprite" type="AnimatedSprite2D" parent="."]
 material = SubResource("ShaderMaterial_flash")
 sprite_frames = ExtResource("2_frames")
 animation = &"walk"
-offset = Vector2(0, -21)
+offset = Vector2(0, -28)
 
 [node name="BodyShape" type="CollisionShape2D" parent="."]
 position = Vector2(0, -18)
