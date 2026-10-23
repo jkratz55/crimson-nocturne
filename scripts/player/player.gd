@@ -17,6 +17,8 @@
 ##   off-hand one, each a [WeaponData] resource driven by frame data
 ## - Standing / crouching / aerial attack variants, the crouch shrinking both
 ##   the body and the hurtbox to match the sprite
+## - The body swings bare-handed; the swinging weapon's own art
+##   ([member WeaponData.weapon_frames]) is drawn over it by a [WeaponSprite]
 ## - Heart-powered sub-weapons ([SubWeaponData]) via the Sub-weapon button
 ##   or the classic Up + Attack input
 ## - Knockback, stun and blinking invincibility frames when hurt
@@ -124,6 +126,7 @@ const BLINK_ALPHA: float = 0.5
 @export var death_mist_scene: PackedScene = preload("res://scenes/fx/death_mist.tscn")
 
 @onready var sprite: AnimatedSprite2D = $Sprite
+@onready var weapon_sprite: WeaponSprite = $Sprite/WeaponSprite
 @onready var body_shape: CollisionShape2D = $BodyShape
 @onready var health: HealthComponent = $HealthComponent
 @onready var hurtbox: Hurtbox = $Hurtbox
@@ -429,7 +432,13 @@ func _enter_state(new_state: State) -> void:
 			_is_crouch_attack = is_on_floor() and _is_holding_down()
 			_set_crouch_shape(_is_crouch_attack)
 			sprite.speed_scale = _swinging.speed_scale if _swinging else 1.0
-			_play(_attack_animation(), true)
+			var swing: StringName = _attack_animation()
+			var art: SpriteFrames = _swinging.weapon_frames if _swinging else null
+			if art != null and not art.has_animation(swing):
+				push_warning("Weapon '%s' has no art for '%s'; the hand swings empty."
+					% [_swinging.display_name, swing])
+			weapon_sprite.hold(art)
+			_play(swing, true)
 			Audio.play_sfx(_swinging.swing_sfx if _swinging else &"sword_swing", 0.08)
 		State.THROW:
 			_jump_takeoff = false
@@ -451,6 +460,7 @@ func _exit_state(old_state: State) -> void:
 			_set_crouch_shape(false)
 		State.ATTACK:
 			weapon_hitbox.deactivate()
+			weapon_sprite.hold(null)
 			sprite.speed_scale = 1.0
 			_set_crouch_shape(false)
 			_swinging = null

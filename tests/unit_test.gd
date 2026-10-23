@@ -40,6 +40,7 @@ func _run() -> void:
 	_test_hearts_and_gold()
 	_test_drop_rolls()
 	_test_item_database()
+	_test_weapon_art()
 	_test_save_round_trip()
 	_test_save_file_round_trip()
 
@@ -278,6 +279,38 @@ func _test_item_database() -> void:
 	_check(ItemDB.get_item(&"short_sword") is WeaponData, "ids resolve to the right type")
 	_check(ItemDB.get_item(&"no_such_item") == null, "an unknown id resolves to null, not an error")
 	_check(ItemDB.items_of_type(ArmorData).size() >= 2, "type filtering works")
+
+
+## Vesper swings bare-handed on every animation a blade sheet draws for, so a
+## weapon using one of those swings has to bring art of its own, and that art
+## has to line up with the hero frame for frame in all three stances.
+func _test_weapon_art() -> void:
+	_section("weapon art")
+	var hero := load("res://resources/sprite_frames/vesper_frames.tres") as SpriteFrames
+	var bare: Dictionary = {}
+	var sheets: int = 0
+	for file: String in DirAccess.get_files_at("res://resources/sprite_frames"):
+		var sheet_file: String = file.trim_suffix(".remap")
+		if not (sheet_file.begins_with("blade_") and sheet_file.ends_with("_frames.tres")):
+			continue
+		sheets += 1
+		var sheet := load("res://resources/sprite_frames".path_join(sheet_file)) as SpriteFrames
+		for anim: String in sheet.get_animation_names():
+			bare[StringName(anim)] = true
+	_check(sheets > 0 and bare.has(&"attack"), "the blade sheets cover the sword swing (%d sheet(s))" % sheets)
+	for item: ItemData in ItemDB.items_of_type(WeaponData):
+		var weapon := item as WeaponData
+		var swings: Array[StringName] = [weapon.get_attack_animation(false, false),
+			weapon.get_attack_animation(true, false), weapon.get_attack_animation(false, true)]
+		if bare.has(swings[0]):
+			_check(weapon.weapon_frames != null, "%s brings its own blade" % weapon.id)
+		if weapon.weapon_frames == null:
+			continue
+		var lined_up: bool = true
+		for anim: StringName in swings:
+			lined_up = lined_up and hero.has_animation(anim) and weapon.weapon_frames.has_animation(anim) \
+				and weapon.weapon_frames.get_frame_count(anim) == hero.get_frame_count(anim)
+		_check(lined_up, "%s's art lines up with every stance of '%s'" % [weapon.id, weapon.attack_animation])
 
 
 # ---------------------------------------------------------------------------

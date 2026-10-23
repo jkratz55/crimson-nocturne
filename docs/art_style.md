@@ -129,6 +129,12 @@ any existing character's costume.
   past the hip, swept round the camera side and held straight out. The
   plane of the cut is seen from slightly above (`SLASH_FLAT`), so the smear
   is a squashed ellipse under the blade.
+- The sword is its own layer. The swings are drawn bare-handed (the hand
+  keeps its grip), and each sword look (`hero.BLADES`) is a sheet of just
+  the blade and its smear over them, cut by the composite's rules: the hand
+  stays in front of the grip, and outlines and smear land only on empty
+  space. Drawn over the bare body, a blade sheet gives exactly the
+  composited frame, so the colour budgets above apply to the pair.
 
 ## Animation
 

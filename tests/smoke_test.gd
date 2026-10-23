@@ -63,8 +63,16 @@ func _run() -> void:
 	await _tap(&"attack", 0.03)
 	await _frames(2)
 	_check(_player.state == Player.State.ATTACK, "attack state entered")
+	var blade: WeaponSprite = _player.weapon_sprite
+	_check(blade.visible and blade.sprite_frames == _player.weapon.weapon_frames,
+		"the sword is drawn over the bare-handed swing")
+	_check(_blade_in_step(), "and holds the body's frame (%s %d)" % [blade.animation, blade.frame])
+	await _frames(5)
+	_check(_player.sprite.frame > 0 and _blade_in_step(),
+		"frame for frame through the swing (%s %d)" % [blade.animation, blade.frame])
 	await _seconds(0.5)
 	_check(_player.state != Player.State.ATTACK, "attack recovers to neutral")
+	_check(not blade.visible, "the sword is put away after the swing")
 
 	# --- Sub-weapon ---------------------------------------------------------------
 	var hearts_before: int = _player.hearts
@@ -184,6 +192,7 @@ func _run() -> void:
 	await _tap(&"attack", 0.03)
 	await _frames(2)
 	_check(_player.sprite.animation == &"attack_whip", "whip plays its own swing (%s)" % _player.sprite.animation)
+	_check(not _player.weapon_sprite.visible, "with no blade drawn over its lash")
 	await _seconds(0.1)
 	var whip_shape := _player.weapon_shape.shape as RectangleShape2D
 	_check(is_equal_approx(whip_shape.size.x, 46.0), "whip hitbox is the long one (%.0f px)" % whip_shape.size.x)
@@ -420,6 +429,14 @@ func _check(condition: bool, label: String) -> void:
 	print(("  [ok]   " if condition else "  [FAIL] ") + label)
 	if not condition:
 		_failures += 1
+
+
+## The weapon overlay shows exactly what the body shows: animation, frame, facing.
+func _blade_in_step() -> bool:
+	var blade: WeaponSprite = _player.weapon_sprite
+	return blade.visible and blade.animation == _player.sprite.animation \
+		and blade.frame == _player.sprite.frame and blade.flip_h == _player.sprite.flip_h \
+		and blade.offset == _player.sprite.offset
 
 
 ## Send an action as an input *event*, which is what UI nodes listen for

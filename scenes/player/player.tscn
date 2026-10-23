@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=3]
+[gd_scene load_steps=18 format=3]
 
 [ext_resource type="Script" path="res://scripts/player/player.gd" id="1_player"]
 [ext_resource type="SpriteFrames" path="res://resources/sprite_frames/vesper_frames.tres" id="2_frames"]
@@ -11,6 +11,7 @@
 [ext_resource type="Resource" path="res://resources/armor/leather_cuirass.tres" id="12_armor"]
 [ext_resource type="Resource" path="res://resources/subweapons/dagger.tres" id="8_dagger"]
 [ext_resource type="Resource" path="res://resources/subweapons/axe.tres" id="9_axe"]
+[ext_resource type="Script" path="res://scripts/components/weapon_sprite.gd" id="13_weapon_sprite"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_body"]
 resource_local_to_scene = true
@@ -37,6 +38,10 @@ sprite_frames = ExtResource("2_frames")
 animation = &"idle"
 autoplay = "idle"
 offset = Vector2(0, -36)
+
+[node name="WeaponSprite" type="AnimatedSprite2D" parent="Sprite"]
+offset = Vector2(0, -36)
+script = ExtResource("13_weapon_sprite")
 
 [node name="BodyShape" type="CollisionShape2D" parent="."]
 position = Vector2(0, -17)

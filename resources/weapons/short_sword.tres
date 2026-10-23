@@ -1,22 +1,16 @@
-[gd_resource type="Resource" script_class="WeaponData" format=3]
+[gd_resource type="Resource" script_class="WeaponData" format=3 uid="uid://cix7emgknnn77"]
 
-[ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://assets/sprites/sword.png" id="2_icon"]
+[ext_resource type="Script" uid="uid://bo6dwtvikedo5" path="res://scripts/data/weapon_data.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://jmn8k263a6x7" path="res://assets/sprites/sword.png" id="2_icon"]
+[ext_resource type="SpriteFrames" path="res://resources/sprite_frames/blade_sabre_frames.tres" id="3_blade"]
 
 [resource]
 script = ExtResource("1_script")
+hitbox_size = Vector2(30, 12)
+weapon_frames = ExtResource("3_blade")
+active_frames = Vector2i(2, 4)
 id = &"short_sword"
 display_name = "Short Sword"
 description = "A dhampir's blade, balanced and swift."
 icon = ExtResource("2_icon")
-damage = 10
-knockback = 110.0
-hitbox_size = Vector2(30, 12)
-hitbox_offset = Vector2(24, -30)
-crouch_hitbox_offset = Vector2(24, -21)
-attack_animation = &"attack"
-active_frames = Vector2i(2, 4)
-speed_scale = 1.0
-swing_sfx = &"sword_swing"
-hit_stop = 0.05
 price = 300

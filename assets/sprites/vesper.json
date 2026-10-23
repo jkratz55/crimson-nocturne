@@ -1507,6 +1507,11 @@
       ]
     }
   },
+  "blade_animations": [
+    "attack",
+    "attack_crouch",
+    "attack_air"
+  ],
   "attack_windows": {
     "attack": {
       "active_frames": [

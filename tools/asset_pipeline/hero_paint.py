@@ -1068,6 +1068,15 @@ class WeaponDraw:
     smear: tuple[Pt, Pt, Pt, float, float] | None = None   # (centre, tip_from, tip_to, strength, flat)
 
 
+@dataclass(frozen=True)
+class Blade:
+    """A sword's look, as the sabre painter draws it. Each one gets its own
+    sheet over the hero's swing (hero.BLADES), so a new sword never needs new
+    hero animations."""
+    length: float = 23.0             # guard to tip at full reach (px)
+    curve: float = 1.6               # the spine-side bow at the tip (px)
+
+
 def sabre_points(hand: Pt, deg: float, length: float, curve: float) -> tuple[Pt, list[Pt], Pt, Pt]:
     d = sdir(deg)
     nrm = (d[1], -d[0])              # spine side (counter-clockwise of the blade direction)
@@ -1251,25 +1260,29 @@ def render_weapon(wd: WeaponDraw) -> Canvas | None:
     return cv
 
 
-def composite_weapon(body: Canvas, weapon: Canvas | None, wd: WeaponDraw) -> np.ndarray:
-    """Weapon layer over (or, `behind`, under) the finished body. The near
-    hand always stays in front of the grip; weapon outline pixels only land
-    on empty space; the smear never covers the body. Returns the mask of the
-    pixels the weapon layer wrote (hit-zone checks, manifest)."""
-    if weapon is None:
-        return np.zeros((H, W), bool)
-    occ_b = body.mat > 0
-    hand = body.part_mask("handN")
+def weapon_select(occ_b: np.ndarray, hand: np.ndarray, weapon: Canvas, wd: WeaponDraw) -> np.ndarray:
+    """The weapon-layer pixels that show over (or, `behind`, under) a finished
+    body with occupancy `occ_b`: the near hand always stays in front of the
+    grip; weapon outline pixels only land on empty space; the smear never
+    covers the body."""
     wmat = weapon.mat
     w_occ = wmat > 0
     w_out = w_occ & (weapon.part == 0)
     w_smear = np.isin(wmat, [MID["smear"]])
     if wd.behind:
-        sel = w_occ & ~occ_b
-    else:
-        sel = (w_occ & ~w_out & ~w_smear & ~hand) | ((w_out | w_smear) & ~occ_b)
+        return w_occ & ~occ_b
+    return (w_occ & ~w_out & ~w_smear & ~hand) | ((w_out | w_smear) & ~occ_b)
+
+
+def composite_weapon(body: Canvas, weapon: Canvas | None, wd: WeaponDraw) -> np.ndarray:
+    """Weapon layer over (or, `behind`, under) the finished body, cut by
+    `weapon_select`. Returns the mask of the pixels the weapon layer wrote
+    (hit-zone checks, manifest)."""
+    if weapon is None:
+        return np.zeros((H, W), bool)
+    sel = weapon_select(body.mat > 0, body.part_mask("handN"), weapon, wd)
     pid = body.new_part("weapon")
-    body.mat[sel] = wmat[sel]
+    body.mat[sel] = weapon.mat[sel]
     body.tone[sel] = weapon.tone[sel]
     body.part[sel] = pid
     body.lock[sel] = True

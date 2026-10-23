@@ -1,0 +1,60 @@
+{
+  "frame_size": [
+    128,
+    80
+  ],
+  "origin": [
+    64,
+    75
+  ],
+  "animations": {
+    "attack": {
+      "frames": 7,
+      "fps": 60.0,
+      "loop": false,
+      "row": 0,
+      "ticks": [
+        2,
+        1,
+        2,
+        3,
+        4,
+        2,
+        1
+      ],
+      "total_ticks": 15
+    },
+    "attack_crouch": {
+      "frames": 7,
+      "fps": 60.0,
+      "loop": false,
+      "row": 1,
+      "ticks": [
+        2,
+        1,
+        2,
+        3,
+        4,
+        2,
+        1
+      ],
+      "total_ticks": 15
+    },
+    "attack_air": {
+      "frames": 7,
+      "fps": 60.0,
+      "loop": false,
+      "row": 2,
+      "ticks": [
+        2,
+        1,
+        2,
+        3,
+        4,
+        2,
+        1
+      ],
+      "total_ticks": 15
+    }
+  }
+}

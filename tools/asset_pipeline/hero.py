@@ -4,7 +4,12 @@ Hero sprite generator: "Vesper", a dhampir swordsman (SotN-style art pass).
     python3 tools/asset_pipeline/hero.py
 
 Writes assets/sprites/vesper.png + vesper.json and
-resources/sprite_frames/vesper_frames.tres.
+resources/sprite_frames/vesper_frames.tres, plus one sheet per sword look in
+BLADES: assets/sprites/blade_<look>.png + .json and
+resources/sprite_frames/blade_<look>_frames.tres. Vesper swings bare-handed in
+vesper.png; the blade sheets hold only the sword (and its smear), frame for
+frame with those swings, and the game draws the swinging weapon's sheet over
+the body (WeaponSprite, WeaponData.weapon_frames).
 
 Frame contract (player.tscn Sprite offset (0, -36)): 128x80 frames, body
 centred on x = 64, the soles' lowest opaque row is y = 75 on grounded frames,
@@ -33,8 +38,8 @@ import numpy as np
 from PIL import Image
 
 from common import HERO_CENTER_X, HERO_FOOT_Y, HERO_FRAME_H, HERO_FRAME_W, SPRITES, SheetBuilder
-from hero_figure import Frame, render_frame
-from hero_paint import ClothArt, Pt, ToneMemory
+from hero_figure import Frame, blade_layer, render_frame
+from hero_paint import Blade, ClothArt, Pt, ToneMemory
 from hero_rig import (
     CHAINS, RUN_CYCLE, RUN_TICKS, STAND_Y, Pose, Sim, SimFrame, anchors, flat_blade, keyed, lerp_pose, mirror_sim,
     rest_shape, run_pose, simulate, solve,
@@ -626,7 +631,8 @@ def floor_clamp(fr: Frame) -> Frame:
     dy = int(ys.max()) - HERO_FOOT_Y if len(ys) else 0
     if dy == 0:
         return fr
-    return replace(fr, rgba=np.roll(fr.rgba, -dy, 0), mat=np.roll(fr.mat, -dy, 0), tone=np.roll(fr.tone, -dy, 0),
+    return replace(fr, rgba=np.roll(fr.rgba, -dy, 0), body=np.roll(fr.body, -dy, 0), mat=np.roll(fr.mat, -dy, 0),
+                   tone=np.roll(fr.tone, -dy, 0),
                    wmask=np.roll(fr.wmask, -dy, 0), hand=(fr.hand[0], fr.hand[1] - dy),
                    part=None if fr.part is None else np.roll(fr.part, -dy, 0))
 
@@ -754,6 +760,37 @@ def render_all(names: list[str] | None = None) -> dict[str, Rendered]:
 
 
 # ==========================================================================
+# Blades: the sword is its own layer
+# ==========================================================================
+# Sword looks, by sheet name. Every animation that holds a sabre is exported
+# bare-handed in vesper.png, and each look gets its own sheet of just the blade
+# over those animations (same names, frames and ticks). A weapon picks a look
+# with WeaponData.weapon_frames, so a new sword is an entry here plus a .tres,
+# never a new set of hero animations.
+BLADES: dict[str, Blade] = {
+    "sabre": Blade(),                # the Short Sword: slim, curved, gold cup hilt
+}
+
+
+def holds_blade(r: Rendered) -> bool:
+    """True for an animation whose sword ships on the blade sheets."""
+    return any(p.weapon == "sabre" for p in r.poses)
+
+
+def render_blade(r: Rendered, blade: Blade) -> list[np.ndarray]:
+    """`blade` alone over each frame of a bladed animation."""
+    out = []
+    tip: Pt | None = None
+    for p, fr in zip(r.poses, r.frames):
+        if p.rot and not p.airborne:
+            raise ValueError(f"{r.anim.name}: a floor-clamped drawing cannot hold a separate blade")
+        img, t = blade_layer(fr, p, blade, tip)
+        out.append(img)
+        tip = t if t is not None else tip
+    return out
+
+
+# ==========================================================================
 # Export
 # ==========================================================================
 def _weapon_entry(fr: Frame) -> dict[str, object]:
@@ -770,11 +807,20 @@ def _weapon_entry(fr: Frame) -> dict[str, object]:
 
 def build() -> None:
     rendered = render_all()
+    bladed = [a for a in ANIMS if holds_blade(rendered[a.name])]
+    bare = {a.name for a in bladed}
     sheet = SheetBuilder("vesper", FW, FH, origin=ORIGIN)
     for a in ANIMS:
         r = rendered[a.name]
-        sheet.add(a.name, [Image.fromarray(f.rgba, "RGBA") for f in r.frames], 60.0, a.loop, ticks=a.ticks)
+        frames = [f.body if a.name in bare else f.rgba for f in r.frames]
+        sheet.add(a.name, [Image.fromarray(f, "RGBA") for f in frames], 60.0, a.loop, ticks=a.ticks)
     sheet.save()
+    for look, blade in BLADES.items():
+        blades = SheetBuilder(f"blade_{look}", FW, FH, origin=ORIGIN)
+        for a in bladed:
+            blades.add(a.name, [Image.fromarray(f, "RGBA") for f in render_blade(rendered[a.name], blade)], 60.0,
+                       a.loop, ticks=a.ticks)
+        blades.save()
     # manifest extras (no runtime consumer): per-frame hand anchor / weapon state,
     # hitbox windows and the throw spawn frame, so scene work never guesses them
     path = os.path.join(SPRITES, "vesper.json")
@@ -783,6 +829,7 @@ def build() -> None:
     for a in ANIMS:
         entry = data["animations"][a.name]
         entry["weapon"] = [_weapon_entry(f) for f in rendered[a.name].frames]
+    data["blade_animations"] = [a.name for a in bladed]
     data["attack_windows"] = {
         "attack": {"active_frames": list(SWORD_ACTIVE), "ticks": _window(SWORD_TICKS, SWORD_ACTIVE)},
         "attack_whip": {"active_frames": list(WHIP_ACTIVE), "ticks": _window(WHIP_TICKS, WHIP_ACTIVE)},

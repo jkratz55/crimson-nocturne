@@ -80,7 +80,8 @@ is a binary `PackedByteArray`; the ASCII layout in the builder is the readable
 source). Re-running it **overwrites editor changes**. The same goes for:
 
 - every `resources/sprite_frames/*_frames.tres` and `assets/sprites/*.png` /
-  `*.json` (`SheetBuilder` and the sprite modules);
+  `*.json` (`SheetBuilder` and the sprite modules; `hero.py` also writes the
+  `blade_<look>` sheets);
 - `resources/tilesets/castle_tileset.tres` (its collision polygons live in
   `tiles.py`), `assets/tiles/castle_tiles.png` / `castle_tiles.json` and
   `assets/tiles/castle_foreground.png` (`tiles.py`);
@@ -141,6 +142,19 @@ Renaming or moving a `.tres` can never invalidate a save.
 a drop table, expires) are deliberately different things. A `WorldItem` needs a
 `world_item_id` that is unique across the whole game — it is what the save
 remembers, and two sharing one would make taking either delete both.
+
+### Swords are a layer over the body
+
+Vesper's sword swings (`attack`, `attack_crouch`, `attack_air`) are drawn
+bare-handed in `vesper.png`. Each sword *look* is its own sheet,
+`blade_<look>_frames.tres`, holding only the blade and its smear, with the same
+animation names, frame counts and ticks. A `WeaponSprite` child of the player's
+`Sprite` shows the swinging weapon's `WeaponData.weapon_frames` on the body's
+current animation and frame; it never plays on its own. So a new sword with an
+existing look is just a `.tres`, and a new look is one entry in `hero.BLADES`
+plus a regeneration, never new hero animations. The whip is still drawn into
+its own hero animations and leaves `weapon_frames` empty. The unit suite fails
+any weapon whose swing has the blade split out but brings no art of its own.
 
 ### Composition for combat
 

@@ -7,7 +7,9 @@ near leg, near coat tail, torso (belt, frogging, lapel), near arm, capelet,
 ribbon tails, ponytail, head, ribbon bow, near arm over the capelet (attacks), far arm in
 front (throw). Then: orphan merge, cloth cleanup, cast shadows, rim, sel-out,
 tooth AA, polish, edge sweep; then the weapon layer (own outline) is composited on top or
-underneath, and the CLUT turns indices into RGBA.
+underneath, and the CLUT turns indices into RGBA. The frame keeps the body alone as well,
+and `blade_layer()` cuts any sword look out on its own, so a sword can ship as a sheet
+of its own over a bare-handed swing.
 """
 from __future__ import annotations
 
@@ -17,10 +19,11 @@ from dataclasses import dataclass
 import numpy as np
 
 from hero_paint import (
-    BACK_HEAD, FLOOR_Y, H, HAND_LEGEND, HANDS, HEAD_LEGEND, HEADS, L2, MID, W, XX, YY, Canvas, ClothArt, Pt,
+    BACK_HEAD, FLOOR_Y, H, HAND_LEGEND, HANDS, HEAD_LEGEND, HEADS, L2, MID, W, XX, YY, Blade, Canvas, ClothArt, Pt,
     ToneMemory,
     WeaponDraw, addp, catmull, cloth_grid, composite_weapon, dilate4, paint_blob, paint_cloth,
     paint_hair_clump, paint_limb, poly_mask, pp_line, ray_exit, render_weapon, resample, rnd, sabre_tip, shift,
+    weapon_select,
 )
 from hero_rig import SLASH_FLAT, Pose, Rig, SimFrame, anchors, foot_points, solve
 
@@ -32,6 +35,7 @@ class Frame:
     """A finished frame: RGBA plus the index buffers (palette swaps, hit
     masks) and the weapon anchor the manifest records."""
     rgba: np.ndarray
+    body: np.ndarray             # RGBA of the figure alone, before the weapon layer
     mat: np.ndarray
     tone: np.ndarray
     hand: Pt
@@ -363,14 +367,14 @@ def paint_head(cv: Canvas, r: Rig) -> Pt:
 # --------------------------------------------------------------------------
 # Frame
 # --------------------------------------------------------------------------
-def weapon_of(r: Rig, prev_tip: Pt | None) -> tuple[WeaponDraw, Pt | None]:
+def weapon_of(r: Rig, prev_tip: Pt | None, blade: Blade = Blade()) -> tuple[WeaponDraw, Pt | None]:
+    """What the weapon layer draws for this pose; a sabre takes `blade`'s look."""
     p = r.p
     hand = r.J["handN"]
     if p.weapon == "sabre":
         grip = addp(hand, (0.0, 0.0))
-        wd = WeaponDraw("sabre", grip, p.blade, behind=p.blade_behind)
-        wd.length *= p.blade_len
-        wd.curve *= p.blade_len
+        wd = WeaponDraw("sabre", grip, p.blade, length=blade.length * p.blade_len,
+                        curve=blade.curve * p.blade_len, behind=p.blade_behind)
         tip = sabre_tip(grip, p.blade, wd.length, wd.curve)
         if p.smear > 0 and prev_tip is not None:
             # the cut is flat: the tip runs round an ellipse centred under the near shoulder
@@ -452,9 +456,29 @@ def render_frame(p: Pose, sec: SimFrame, mem: ToneMemory | None = None, prev_tip
     cv.aa()
     cv.polish()
     cv.edge_sweep()
+    body = cv.rgba(raw)
     wd, tip = weapon_of(r, prev_tip)
     wmask = composite_weapon(cv, render_weapon(wd), wd)
     if mem is not None:
         mem.advance()
-    return Frame(cv.rgba(raw), cv.mat.copy(), cv.tone.copy(), J["handN"], wd, tip, wmask, cv.part.copy(),
+    return Frame(cv.rgba(raw), body, cv.mat.copy(), cv.tone.copy(), J["handN"], wd, tip, wmask, cv.part.copy(),
                  tuple(cv.names))
+
+
+def blade_layer(fr: Frame, p: Pose, blade: Blade, prev_tip: Pt | None, raw: bool = False
+                ) -> tuple[np.ndarray, Pt | None]:
+    """The sword alone, for its own sheet: the pixels `blade` adds over this
+    finished frame's body, cut by the same rules as the composite (the near
+    hand in front of the grip, outlines and smear only on empty space), so
+    the sheet drawn over the bare body gives the composited frame exactly.
+    `prev_tip` is the previous frame's tip in this look (the smear's path)."""
+    wd, tip = weapon_of(solve(p), prev_tip, blade)
+    out = np.zeros((H, W, 4), np.uint8)
+    weapon = render_weapon(wd)
+    if weapon is None:
+        return out, tip
+    occ_b = fr.body[..., 3] > 0
+    hand = np.isin(fr.part, [i for i, n in enumerate(fr.names) if n.startswith("handN")]) & occ_b
+    sel = weapon_select(occ_b, hand, weapon, wd)
+    out[sel] = weapon.rgba(raw)[sel]
+    return out, tip

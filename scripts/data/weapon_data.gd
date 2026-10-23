@@ -32,6 +32,13 @@ extends ItemData
 ## and aerial variants are this name plus "_crouch" / "_air", which is the
 ## naming convention used by the [SpriteFrames] the hero pipeline generates.
 @export var attack_animation: StringName = &"attack"
+## The weapon itself, drawn over the hero's swing by a [WeaponSprite]: a
+## [SpriteFrames] whose animations share the swing's names and frame counts
+## (the hero pipeline writes one per sword look,
+## [code]blade_<look>_frames.tres[/code]). Swords that share a look share a
+## sheet. Leave it empty for a weapon drawn into the hero's own animation,
+## like the whip.
+@export var weapon_frames: SpriteFrames
 
 @export_group("Frame Data")
 ## First and last animation frame (inclusive) on which the hitbox is live.
